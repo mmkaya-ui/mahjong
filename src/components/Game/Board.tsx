@@ -1,5 +1,9 @@
 'use client';
 
+import React, { useEffect, useRef, useState } from 'react';
+import { useGame } from '@/context/GameContext';
+import Tile from './Tile';
+import styles from './Board.module.css';
 import { TURTLE_LAYOUT, EASY_LAYOUT, HARD_LAYOUT } from '@/utils/layouts';
 
 export default function Board() {
