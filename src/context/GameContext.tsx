@@ -145,6 +145,33 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
                 if (updated.length === 0) {
                     setIsWon(true);
+                } else {
+                    // Check for deadlocks
+                    const openTiles = updated.filter(t => t.isClickable);
+                    let hasMove = false;
+                    for (let i = 0; i < openTiles.length; i++) {
+                        for (let j = i + 1; j < openTiles.length; j++) {
+                            if (canMatch(openTiles[i], openTiles[j])) {
+                                hasMove = true;
+                                break;
+                            }
+                        }
+                        if (hasMove) break;
+                    }
+
+                    if (!hasMove) {
+                        // We can alert or toast here. For now, let's use a subtle visual cue or just console.
+                        // Better: Auto-show toast if we had a toast system.
+                        // Re-using 'hint' logic? No.
+                        // Let's set a state or dispatch an event? 
+                        // Simplest: Just use the Shuffle button animation or text?
+                        // "No Moves!"
+                        console.log("No moves available!");
+                        // dispatchEvent for UI?
+                        if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('mahjong-no-moves'));
+                        }
+                    }
                 }
             } else {
                 // No match

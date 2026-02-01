@@ -97,6 +97,40 @@ export default function Controls({ onOpenSound }: Props) {
             </div>
 
             {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}
+            <NoMovesToast />
         </>
+    );
+}
+
+function NoMovesToast() {
+    const [show, setShow] = useState(false);
+    React.useEffect(() => {
+        const handler = () => {
+            setShow(true);
+            setTimeout(() => setShow(false), 3000);
+        };
+        window.addEventListener('mahjong-no-moves', handler);
+        return () => window.removeEventListener('mahjong-no-moves', handler);
+    }, []);
+
+    if (!show) return null;
+
+    return (
+        <div style={{
+            position: 'absolute',
+            top: '80px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(231, 76, 60, 0.9)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            zIndex: 100,
+            pointerEvents: 'none', // Allow clicking through to shuffle
+            fontSize: '0.9rem',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+        }}>
+            No moves available! Try Shuffle.
+        </div>
     );
 }
