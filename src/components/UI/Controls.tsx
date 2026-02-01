@@ -1,5 +1,6 @@
 'use client';
 
+import { Shuffle, Lightbulb, Volume2, Globe, Signal } from 'lucide-react';
 import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { useLanguage } from '@/context/LanguageContext';
@@ -38,11 +39,13 @@ export default function Controls({ onOpenSound }: Props) {
             </div>
 
             <div className={styles.actions}>
-                <button className={styles.actionBtn} onClick={shuffle}>
-                    {t.game.shuffle}
+                <button className={styles.actionBtn} onClick={shuffle} aria-label={t.game.shuffle}>
+                    <Shuffle size={18} />
+                    <span>{t.game.shuffle}</span>
                 </button>
-                <button className={styles.actionBtn} onClick={requestHint}>
-                    {t.game.hint}
+                <button className={styles.actionBtn} onClick={requestHint} aria-label={t.game.hint}>
+                    <Lightbulb size={18} />
+                    <span>{t.game.hint}</span>
                 </button>
                 <button
                     className={styles.diffBtn}
@@ -53,13 +56,15 @@ export default function Controls({ onOpenSound }: Props) {
                     }}
                     title="Change Difficulty"
                 >
-                    {difficulty.toUpperCase()}
+                    <Signal size={16} />
+                    <span>{difficulty.toUpperCase()}</span>
                 </button>
                 <button className={styles.iconBtn} onClick={onOpenSound} aria-label="Sound Settings">
-                    🎵
+                    <Volume2 size={20} />
                 </button>
                 <button className={styles.iconBtn} onClick={toggleLanguage} aria-label="Change Language">
-                    {language.toUpperCase()}
+                    <Globe size={20} />
+                    <span className={styles.langBadgbe}>{language.toUpperCase()}</span>
                 </button>
             </div>
 

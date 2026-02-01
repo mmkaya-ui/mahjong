@@ -57,7 +57,7 @@
 }
 
 .actionBtn {
-    padding: 10px 20px;
+    padding: 10px 16px;
     border: none;
     border-radius: 20px;
     background: #ecf0f1;
@@ -65,6 +65,10 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* space between icon and text */
 }
 
 .diffBtn {
@@ -76,6 +80,9 @@
     cursor: pointer;
     transition: all 0.2s;
     letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .diffBtn:active,
@@ -148,5 +155,30 @@
 
     .actionBtn {
         flex: 1;
+        justify-content: center;
+        padding: 12px 10px;
     }
+
+    .actionBtn span {
+        display: none;
+        /* Hide text on very small screens? Option, but keeping for now */
+    }
+
+    /* Actually let's keep text but make font smaller */
+    .actionBtn {
+        font-size: 0.9rem;
+    }
+}
+
+.langBadgbe {
+    font-size: 0.7rem;
+    font-weight: bold;
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    background: #34495e;
+    color: #fff;
+    border-radius: 4px;
+    padding: 1px 3px;
+    line-height: 1;
 }
