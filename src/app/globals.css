@@ -50,7 +50,8 @@ body {
   flex: 1;
   position: relative;
   overflow: hidden;
-  padding-bottom: 80px;
+  padding-bottom: 120px;
+  /* More space for taller controls */
 }
 
 ::-webkit-scrollbar {

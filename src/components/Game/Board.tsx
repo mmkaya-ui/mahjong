@@ -23,7 +23,8 @@ export default function Board() {
             // Max Height: approx 18 rows * 32px (half-height step) + 64 = ~640px?
 
             // Let's assume logical width ~800px, height ~600px
-            const contentWidth = 800;
+            // Tighter bounds for better mobile fill
+            const contentWidth = 740; // Reduced from 800 to fit wider turtle
             const contentHeight = 600;
 
             const availWidth = parent.clientWidth;
@@ -32,9 +33,11 @@ export default function Board() {
             const scaleX = availWidth / contentWidth;
             const scaleY = availHeight / contentHeight;
 
-            // Keep aspect ratio, apply padding
-            const newScale = Math.min(scaleX, scaleY) * 0.9;
-            setScale(Math.max(0.3, Math.min(newScale, 1.2))); // Clamp
+            // Use 95% of available space instead of 90%
+            const newScale = Math.min(scaleX, scaleY) * 0.95;
+
+            // Allow slightly smaller min scale if absolutely needed, but generally try to keep it readable
+            setScale(Math.max(0.35, Math.min(newScale, 1.3)));
         };
 
         window.addEventListener('resize', handleResize);
