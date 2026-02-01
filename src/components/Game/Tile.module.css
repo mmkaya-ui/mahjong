@@ -1,0 +1,84 @@
+.tileWrapper {
+  position: absolute;
+  width: 48px;
+  height: 64px;
+  transition: transform 0.2s, filter 0.2s;
+  cursor: default;
+  /* Centering origin */
+  margin-left: -24px;
+  margin-top: -32px;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.blocked {
+  filter: brightness(0.7) grayscale(0.2);
+  pointer-events: none;
+}
+
+.tileMove {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.2s;
+}
+
+.tileFace {
+  width: 100%;
+  height: 100%;
+  background: #fdf6e3; /* Cream/Bone color */
+  border-radius: 8px;
+  box-shadow: 
+    inset 0 0 5px rgba(0,0,0,0.1),
+    1px 1px 0px #d0c8b0,
+    2px 2px 0px #b0a890,
+    3px 3px 0px #908870,
+    4px 4px 5px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  user-select: none;
+  border: 1px solid #e0d8c0;
+}
+
+.selected .tileFace {
+  background: #fff;
+  box-shadow: 
+    inset 0 0 10px rgba(50, 150, 255, 0.3),
+    0 0 15px rgba(50, 150, 255, 0.5);
+  transform: translateY(-2px);
+  border-color: #3498db;
+}
+
+.hinted .tileFace {
+  animation: pulse 1.5s infinite;
+  box-shadow: 0 0 15px rgba(46, 204, 113, 0.6);
+  border-color: #2ecc71;
+}
+
+.symbol {
+  line-height: 1;
+  /* Adjust font if necessary, but system font usually has Mahjong tiles */
+  font-family: "Segoe UI Symbol", "Apple Symbols", sans-serif;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 600px) {
+  .tileWrapper {
+    width: 36px;
+    height: 48px;
+    margin-left: -18px;
+    margin-top: -24px;
+  }
+  .tileFace {
+    font-size: 24px;
+  }
+}

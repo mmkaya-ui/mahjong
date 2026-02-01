@@ -1,0 +1,16 @@
+{
+  "name": "Zen Mahjong",
+  "short_name": "ZenMahjong",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F0F4F8",
+  "theme_color": "#F0F4F8",
+  "description": "A minimalist, Zen-inspired Mahjong Solitaire game for relaxation.",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}

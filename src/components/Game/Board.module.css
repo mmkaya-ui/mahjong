@@ -1,0 +1,22 @@
+.boardContainer {
+    width: 100%;
+    height: 100%;
+    /* Fill available space */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    /* Background or texture? */
+}
+
+.boardContent {
+    position: relative;
+    width: 0;
+    /* Centered origin */
+    height: 0;
+    display: flex;
+    /* For centering content within? No, tiles are absolute. */
+    transform-origin: center center;
+    transition: transform 0.3s ease-out;
+}
