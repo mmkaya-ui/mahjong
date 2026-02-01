@@ -96,60 +96,79 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
     // --- Control Logic ---
 
-    const stopAudio = useCallback(() => {
+    // --- Control Logic ---
+
+    // Stop a specific set of nodes (safe cleanup)
+    const stopNodes = useCallback((
+        osc: OscillatorNode | null,
+        gain: GainNode | null,
+        rain: AudioBufferSourceNode | null,
+        natureGain: GainNode | null
+    ) => {
         const ctx = audioCtxRef.current;
         if (!ctx) return;
 
-        // Fade out Drone
-        if (droneGainRef.current) {
-            try {
-                droneGainRef.current.gain.setTargetAtTime(0, ctx.currentTime, 0.5);
-            } catch (e) { console.error(e); }
-        }
+        const now = ctx.currentTime;
 
-        // Fade out Nature
-        if (natureGainRef.current) {
-            try {
-                natureGainRef.current.gain.setTargetAtTime(0, ctx.currentTime, 0.5);
-            } catch (e) { console.error(e); }
-        }
+        // Fade out
+        try {
+            if (gain) gain.gain.setTargetAtTime(0, now, 0.2);
+            if (natureGain) natureGain.gain.setTargetAtTime(0, now, 0.2);
+        } catch (e) { /* ignore */ }
 
-        // Cleanup after fade
+        // Stop after fade
         setTimeout(() => {
-            if (oscRef.current) {
-                oscRef.current.stop();
-                oscRef.current.disconnect();
-                oscRef.current = null;
-            }
-            if (rainNodeRef.current) {
-                rainNodeRef.current.stop();
-                rainNodeRef.current.disconnect();
-                rainNodeRef.current = null;
-            }
-            if (animationFrameRef.current) {
-                cancelAnimationFrame(animationFrameRef.current);
-                animationFrameRef.current = null;
-            }
-        }, 600);
+            try {
+                if (osc) { osc.stop(); osc.disconnect(); }
+                if (rain) { rain.stop(); rain.disconnect(); }
+            } catch (e) { /* ignore already stopped */ }
+        }, 300);
     }, []);
+
+    const stopAudio = useCallback(() => {
+        // Capture CURRENT nodes to stop them specifically
+        // This prevents the 'timeout race condition' where we stop the *new* node
+        const currentOsc = oscRef.current;
+        const currentDroneGain = droneGainRef.current;
+        const currentRain = rainNodeRef.current;
+        const currentNatureGain = natureGainRef.current;
+
+        // Clear refs immediately so new starts don't see them
+        oscRef.current = null;
+        droneGainRef.current = null;
+        rainNodeRef.current = null;
+        natureGainRef.current = null;
+
+        if (animationFrameRef.current) {
+            cancelAnimationFrame(animationFrameRef.current);
+            animationFrameRef.current = null;
+        }
+
+        stopNodes(currentOsc, currentDroneGain, currentRain, currentNatureGain);
+
+    }, [stopNodes]);
 
     const startAudio = useCallback(() => {
         const ctx = initAudioContext();
 
+        // Stop any existing before starting new (just in case)
+        if (oscRef.current || rainNodeRef.current) {
+            stopAudio();
+        }
+
+        const now = ctx.currentTime;
+
         // --- 1. Base Frequency (Drone) ---
         if (frequency !== 'off') {
-            // Stop existing if any (quick swap)
-            if (oscRef.current) { oscRef.current.stop(); oscRef.current.disconnect(); }
-
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
 
             const freqValue = frequency === '528' ? 528 : 432;
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(freqValue, ctx.currentTime);
+            osc.frequency.setValueAtTime(freqValue, now);
 
-            gain.gain.setValueAtTime(0, ctx.currentTime);
-            gain.gain.linearRampToValueAtTime(volume * 0.6, ctx.currentTime + 2); // Drone max 60% vol
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(volume * 0.6, now + 1.5); // Smoother fade in
 
             osc.connect(gain);
             gain.connect(ctx.destination);
@@ -162,8 +181,6 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         // --- 2. Nature Layer (Rain + Chirps) ---
         if (isNatureOn) {
             // Rain (Pink Noise)
-            if (rainNodeRef.current) { rainNodeRef.current.stop(); rainNodeRef.current.disconnect(); }
-
             const rainSource = ctx.createBufferSource();
             rainSource.buffer = createPinkNoise(ctx);
             rainSource.loop = true;
@@ -171,10 +188,10 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             const rainGain = ctx.createGain();
             const rainFilter = ctx.createBiquadFilter();
             rainFilter.type = 'lowpass';
-            rainFilter.frequency.value = 800; // Muffled rain sound
+            rainFilter.frequency.value = 600; // More muffled/distant rain
 
-            rainGain.gain.setValueAtTime(0, ctx.currentTime);
-            rainGain.gain.linearRampToValueAtTime(volume * 0.4, ctx.currentTime + 3); // Rain max 40% vol
+            rainGain.gain.setValueAtTime(0, now);
+            rainGain.gain.linearRampToValueAtTime(volume * 0.35, now + 2);
 
             rainSource.connect(rainFilter);
             rainFilter.connect(rainGain);
@@ -188,65 +205,66 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             const natureLoop = () => {
                 if (!isPlaying || !isNatureOn) return;
 
-                const now = ctx.currentTime;
-                if (now >= nextChirpTimeRef.current) {
-                    // Play a chirp
-                    // Probability check to keep it sparse
-                    if (Math.random() > 0.3) {
-                        playChirp(ctx, rainGain); // Use rainGain as output route so it shares volume? Or separate? Better separate but simple logic: connect to rainGain for master vol.
-                        // Actually playChirp creates its own path. Let's connect to destination but respect volume.
-                        // Re-implement inside playChirp to use volume state.
+                const t = ctx.currentTime;
+                if (t >= nextChirpTimeRef.current) {
+                    if (Math.random() > 0.4) {
+                        // Play via Main Destination to avoid complex routing, 
+                        // but scale volume manually.
+                        // Ideally we'd have a master gain, but this is fine.
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+
+                        // Softer chirp
+                        osc.type = 'sine';
+                        const startFreq = 1500 + Math.random() * 1000;
+                        osc.frequency.setValueAtTime(startFreq, t);
+                        osc.frequency.exponentialRampToValueAtTime(startFreq * 0.8, t + 0.15);
+
+                        gain.gain.setValueAtTime(0, t);
+                        gain.gain.linearRampToValueAtTime(0.08 * volume, t + 0.05);
+                        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(t);
+                        osc.stop(t + 0.35);
                     }
-                    // Schedule next chirp in 5-15 seconds
-                    nextChirpTimeRef.current = now + 5 + Math.random() * 10;
+                    nextChirpTimeRef.current = t + 8 + Math.random() * 12; // More sparse
                 }
                 animationFrameRef.current = requestAnimationFrame(natureLoop);
             };
-            nextChirpTimeRef.current = ctx.currentTime + 2; // First chirp delay
+            nextChirpTimeRef.current = now + 2;
             natureLoop();
         }
 
-    }, [frequency, isNatureOn, volume, isPlaying]);
+    }, [frequency, isNatureOn, volume, isPlaying, stopAudio]);
 
-    // Volume Updates - Throttle/Safe update
+    // Volume Updates
     useEffect(() => {
         const ctx = audioCtxRef.current;
         if (!ctx) return;
-
         const now = ctx.currentTime;
 
         if (droneGainRef.current) {
-            try {
-                droneGainRef.current.gain.setTargetAtTime(frequency === 'off' ? 0 : volume * 0.6, now, 0.1);
-            } catch (e) { }
+            droneGainRef.current.gain.setTargetAtTime(frequency === 'off' ? 0 : volume * 0.6, now, 0.1);
         }
-
         if (natureGainRef.current) {
-            try {
-                natureGainRef.current.gain.setTargetAtTime(isNatureOn ? volume * 0.4 : 0, now, 0.1);
-            } catch (e) { }
+            natureGainRef.current.gain.setTargetAtTime(isNatureOn ? volume * 0.35 : 0, now, 0.1);
         }
-
     }, [volume, frequency, isNatureOn]);
 
-    // Play/Pause Trigger
+    // Trigger Restart on Change
     useEffect(() => {
         if (isPlaying) {
+            // We only restart if specific structural changes happen.
+            // But simpler to just restart for now to ensure clean state.
+            stopAudio();
             startAudio();
         } else {
             stopAudio();
         }
-        return () => stopAudio();
-    }, [isPlaying, startAudio, stopAudio]);
-
-    // Re-trigger if settings change while playing (Hot swap)
-    // Actually the volume effect above handles gain changes.
-    // We only need full restart if adding/removing nodes (Frequency switch, Nature toggle) called for.
-    useEffect(() => {
-        if (isPlaying) {
-            startAudio();
-        }
-    }, [frequency, isNatureOn]);
+        return () => stopAudio(); // Cleanup on unmount
+    }, [isPlaying, frequency, isNatureOn /*, startAudio, stopAudio - stabilized */]);
 
 
     const playClickSound = () => {
@@ -254,35 +272,47 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         if (!ctx) return;
 
         const t = ctx.currentTime;
+
+        // "Thock" sound synthesis
+        // Low sine wave + filtered noise burst or short decay triangle
+
+        // 1. Body (Sine/Triangle)
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(800, t);
-        osc.frequency.exponentialRampToValueAtTime(300, t + 0.1);
+        osc.frequency.setValueAtTime(150, t);
+        osc.frequency.exponentialRampToValueAtTime(80, t + 0.1); // Pitch drop
 
-        gain.gain.setValueAtTime(0.5 * volume, t);
-        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+        // Low Pass to remove harshness
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(400, t); // Heavy filter
 
-        osc.connect(gain);
+        gain.gain.setValueAtTime(0.8 * volume, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+
+        osc.connect(filter);
+        filter.connect(gain);
         gain.connect(ctx.destination);
 
         osc.start();
         osc.stop(t + 0.15);
 
-        // Sub layer
+        // 2. Click (High tick) - subtle
         const osc2 = ctx.createOscillator();
         const gain2 = ctx.createGain();
         osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(200, t);
-        osc2.frequency.exponentialRampToValueAtTime(50, t + 0.2);
-        gain2.gain.setValueAtTime(0.3 * volume, t);
-        gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.2); // Fix: use gain2 here
+        osc2.frequency.setValueAtTime(2000, t);
+        osc2.frequency.exponentialRampToValueAtTime(1000, t + 0.02);
+
+        gain2.gain.setValueAtTime(0.1 * volume, t);
+        gain2.gain.exponentialRampToValueAtTime(0.01, t + 0.02);
 
         osc2.connect(gain2);
         gain2.connect(ctx.destination);
         osc2.start();
-        osc2.stop(t + 0.25);
+        osc2.stop(t + 0.03);
     };
 
     return (
