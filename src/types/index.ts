@@ -10,6 +10,7 @@ export interface Translations {
         gameOver: string;
         score: string;
         noMoves: string;
+        tryAgain: string;
     };
     sounds: {
         healing: string;
@@ -36,6 +37,8 @@ export interface Translations {
     modes: {
         zen: string;
         realism: string;
+        hardcore: string;
+        maximum: string;
     };
     settings: {
         title: string;
