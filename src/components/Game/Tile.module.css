@@ -80,16 +80,3 @@
     transform: scale(1);
   }
 }
-
-@media (max-width: 600px) {
-  .tileWrapper {
-    width: 36px;
-    height: 48px;
-    margin-left: -18px;
-    margin-top: -24px;
-  }
-
-  .tileFace {
-    font-size: 24px;
-  }
-}
