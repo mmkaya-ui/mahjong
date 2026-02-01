@@ -143,3 +143,138 @@ export function shuffleTiles(currentTiles: Tile[]): Tile[] {
         isSelected: false
     }));
 }
+
+export function generateSolvableBoard(layout: TilePosition[], deck: Omit<Tile, 'x' | 'y' | 'z' | 'isVisible' | 'isClickable' | 'isSelected'>[]): Tile[] {
+    // 1. Clone layout to track "remaining" tiles during generation
+    // We strictly need to simulate the game in reverse? 
+    // Actually, we simulate "Playing the game" to remove tiles, but we assign values as we go.
+    // So: Start with FULL board of Unassigned tiles.
+    // Find tiles that CAN be removed (unblocked).
+    // Pick 2. Assign them a matching pair from the deck.
+    // Remove them. 
+    // Repeat.
+
+    // We need to track which positions are currently "on the board" to calculate blocking.
+    // Initially ALL layout positions are on the board.
+    let pendingPositions = layout.map((p, i) => ({ ...p, id: `pos-${i}`, tempId: i }));
+    const assignedTiles: Tile[] = [];
+
+    // Shuffle the deck of values (pairs) so we assign random pairs
+    // The deck needs to be pairs. generateDeck returns a flat list.
+    // We should group them or just pop 2 matching? 
+    // Deck is already fully populated. We just shuffle it.
+    const shuffledDeck = [...deck];
+    for (let i = shuffledDeck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledDeck[i], shuffledDeck[j]] = [shuffledDeck[j], shuffledDeck[i]];
+    }
+
+    // We need to pair them up.
+    // Actually simpler: Just sort deck by type+value to find pairs easily, THEN shuffle the PAIRS?
+    // No, standard deck has 4 of each usually.
+    // Let's just take the shuffled deck, find a match for the first item, remove both, use them.
+    // Performance might be poor if we search every time.
+    // Better: Group deck into pairs first.
+    const pairs: [typeof deck[0], typeof deck[0]][] = [];
+    while (shuffledDeck.length >= 2) {
+        const first = shuffledDeck.pop()!;
+        // Find a match
+        const matchIndex = shuffledDeck.findIndex(t => canMatch({ ...t, x: 0, y: 0, z: 0, isVisible: true, isClickable: true, isSelected: false, id: 'temp' }, { ...first, x: 0, y: 0, z: 0, isVisible: true, isClickable: true, isSelected: false, id: 'temp2' }));
+
+        if (matchIndex !== -1) {
+            const second = shuffledDeck.splice(matchIndex, 1)[0];
+            pairs.push([first, second]);
+        } else {
+            // Should not happen in a proper mahjong deck unless odd count
+            console.warn("Odd tile found during pair generation", first);
+        }
+    }
+
+    // Shuffle the pairs
+    for (let i = pairs.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+    }
+
+    // Simulation Loop
+    // While positions remain:
+    while (pendingPositions.length > 0) {
+        // Find available positions
+        // A position is available if !isBlocked.
+        // But `isBlocked` expects `Tile[]`. `pendingPositions` has x,y,z.
+        // We can cast / adapt.
+        const currentBoardForCheck = pendingPositions.map(p => ({
+            ...p,
+            id: `temp-${p.tempId}`,
+            type: 'dummy',
+            value: 0,
+            isVisible: true,
+            isClickable: true,
+            isSelected: false
+        }));
+
+        const availableIndices = pendingPositions
+            .map((_, i) => i)
+            .filter(i => !isBlocked(currentBoardForCheck[i], currentBoardForCheck));
+
+        if (availableIndices.length < 2) {
+            // deadlock or finished?
+            // If < 2 but positions > 0, we are stuck. 
+            // This happens if the layout itself is invalid (e.g. strict overlap cycle) OR standard generation luck.
+            // But since we are removing from the "Outside in" (standard play), if the layout is valid, there should always be >2.
+            // Unless only 1 tile left? (Not possible with pairs).
+            /*
+             * Fallback: If layout is weird and we get stuck, we might need to backtrack or just break.
+             * Ideally we error out and retry, but for now let's just break to avoid infinite loop.
+            */
+            if (pendingPositions.length > 0) {
+                console.error("Layout Stuck! No available moves during generation.");
+                break;
+            }
+        }
+
+        // Strategy: To make it "Random" but "Solvable", we pick 2 available positions randomly.
+        // To make it "Good Layout" (user request), maybe we prioritize something?
+        // Random is fine for now.
+        const idx1 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        let idx2 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        while (idx1 === idx2 && availableIndices.length > 1) {
+            idx2 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+        }
+
+        // We have 2 positions.
+        const pos1 = pendingPositions[idx1];
+        const pos2 = pendingPositions[idx2];
+
+        // We have a pair of values
+        const pair = pairs.pop();
+        if (!pair) break; // Run out of tiles
+
+        // Assign
+        assignedTiles.push({
+            ...pos1,
+            id: pair[0].id,
+            type: pair[0].type,
+            value: pair[0].value,
+            isVisible: true,
+            isClickable: true,
+            isSelected: false
+        } as Tile);
+
+        assignedTiles.push({
+            ...pos2,
+            id: pair[1].id,
+            type: pair[1].type,
+            value: pair[1].value,
+            isVisible: true,
+            isClickable: true,
+            isSelected: false
+        } as Tile);
+
+        // Remove from pending (conceptually "played")
+        // Note: Removing by index affects indices. Filter is safer.
+        pendingPositions = pendingPositions.filter(p => p.tempId !== pos1.tempId && p.tempId !== pos2.tempId);
+    }
+
+    return assignedTiles;
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { Tile, generateDeck, isBlocked, canMatch, shuffleTiles } from '@/utils/mahjong';
+import { Tile, generateDeck, isBlocked, canMatch, shuffleTiles, generateSolvableBoard } from '@/utils/mahjong';
 import { TURTLE_LAYOUT, EASY_LAYOUT, HARD_LAYOUT } from '@/utils/layouts';
 import { useAudio } from './AudioContext';
 
@@ -64,32 +64,27 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
             targetCount = 144;
         }
 
-        const deck = generateDeck(targetCount);
-        // Determine how many tiles we can actually fit? 
-        // Deck size should match layout size usually.
-        // If layout > deck, trim layout? 
-        // If deck > layout, trim deck?
+        let deck = generateDeck(layout.length);
 
-        // Safer:
-        const finalLayout = layout.slice(0, deck.length);
+        // Safety: ensure deck is large enough or trimmed
+        if (deck.length > layout.length) {
+            deck = deck.slice(0, layout.length);
+        }
+        // If deck < layout, we have a problem (impossible to fill). 
+        // Our layouts should match deck sizes (36, 144).
 
-        // Shuffle deck first randomly
-        deck.sort(() => Math.random() - 0.5);
+        // Use Solvable Board Generator
+        const initialTiles = generateSolvableBoard(layout, deck);
 
-        const newTiles: Tile[] = finalLayout.map((pos, i) => ({
-            ...pos,
-            ...deck[i],
+        // Final update of state properties
+        const readyTiles = initialTiles.map(t => ({
+            ...t,
             isVisible: true,
-            isClickable: true,
+            isClickable: !isBlocked(t, initialTiles),
             isSelected: false
         }));
 
-        const playableTiles = newTiles.map(t => ({
-            ...t,
-            isClickable: !isBlocked(t, newTiles)
-        }));
-
-        setTiles(playableTiles);
+        setTiles(readyTiles);
         setScore(0);
         setMatches(0);
         setSelectedTile(null);
