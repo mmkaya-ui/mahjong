@@ -9,6 +9,7 @@ export const de: Translations = {
         won: 'Herzlichen Glückwunsch!',
         gameOver: 'Spiel Vorbei',
         score: 'Punktzahl',
+        noMoves: 'Keine Züge mehr! Versuche zu mischen.',
     },
     settings: {
         title: 'Einstellungen',

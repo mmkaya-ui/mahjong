@@ -9,6 +9,7 @@ export interface Translations {
         won: string;
         gameOver: string;
         score: string;
+        noMoves: string;
     };
     sounds: {
         healing: string;

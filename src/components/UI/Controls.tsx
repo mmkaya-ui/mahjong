@@ -130,7 +130,7 @@ function NoMovesToast() {
             fontSize: '0.9rem',
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
         }}>
-            No moves available! Try Shuffle.
+            {useLanguage().t.game.noMoves}
         </div>
     );
 }

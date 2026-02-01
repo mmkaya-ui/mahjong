@@ -9,6 +9,7 @@ export const en: Translations = {
         won: 'Congratulations! You Won.',
         gameOver: 'Game Over',
         score: 'Score',
+        noMoves: 'No moves available! Try Shuffle.',
     },
     settings: {
         title: 'Settings',

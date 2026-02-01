@@ -9,6 +9,7 @@ export const tr: Translations = {
         won: 'Tebrikler! Kazandın.',
         gameOver: 'Oyun Bitti',
         score: 'Puan',
+        noMoves: 'Hamle kalmadı! Karıştırmayı dene.',
     },
     settings: {
         title: 'Ayarlar',
