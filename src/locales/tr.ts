@@ -21,4 +21,16 @@ export const tr: Translations = {
         nature: 'Doğa (432Hz)',
         off: 'Kapalı',
     },
+    help: {
+        title: 'Nasıl Oynanır',
+        goal: 'Amaç',
+        goalDesc: 'Tahtayı temizlemek için tüm çiftleri eşleştirin.',
+        rules: 'Kurallar',
+        rulesDesc: 'Bir taş seçilebilmesi için: Üzerinde taş olmamalı VE sağında veya solunda boşluk olmalıdır.',
+        modes: 'Oyun Modları',
+        modesDesc: 'ZEN: Çözülebilir (Strateji). GERÇEK: Tamamen rastgele (Şans).',
+        controls: 'Kontroller',
+        controlsDesc: 'Sıkışırsanız Karıştır\'ı kullanın. İpucu için Ampul\'e basın.',
+        close: 'Anlaşıldı'
+    }
 };

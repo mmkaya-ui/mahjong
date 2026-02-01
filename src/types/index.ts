@@ -21,4 +21,16 @@ export interface Translations {
         nature: string;
         off: string;
     };
+    help: {
+        title: string;
+        goal: string;
+        goalDesc: string;
+        rules: string;
+        rulesDesc: string;
+        modes: string;
+        modesDesc: string;
+        controls: string;
+        controlsDesc: string;
+        close: string;
+    };
 }
