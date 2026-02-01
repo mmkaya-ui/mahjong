@@ -28,10 +28,6 @@ export default function HelpModal({ onClose }: Props) {
                     <div className={styles.section}>
                         <h3>{t.help.rules} 📜</h3>
                         <p style={{ color: '#2c3e50', marginBottom: '8px' }}>{t.help.rulesDesc}</p>
-                        <ul style={{ paddingLeft: '20px', color: '#7f8c8d', fontSize: '0.9rem' }}>
-                            <li style={{ marginBottom: '4px' }}>Free Left OR Right side</li>
-                            <li>No tile on top</li>
-                        </ul>
                     </div>
 
                     <div className={styles.section}>

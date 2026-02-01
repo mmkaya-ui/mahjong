@@ -133,6 +133,7 @@
     justify-content: center;
     cursor: pointer;
     color: #34495e;
+    position: relative;
 }
 
 .resetBtn {

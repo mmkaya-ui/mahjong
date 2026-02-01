@@ -88,7 +88,7 @@ export default function Controls({ onOpenSound }: Props) {
                             </button>
                             <button className={styles.iconBtn} onClick={toggleLanguage} aria-label="Change Language">
                                 <Globe size={20} />
-                                <span className={styles.langBadgbe}>{language.toUpperCase()}</span>
+                                <span className={styles.langBadge}>{language.toUpperCase()}</span>
                             </button>
                             <button className={styles.iconBtn} onClick={() => setIsHelpOpen(true)} aria-label="Help">
                                 <CircleHelp size={20} />
