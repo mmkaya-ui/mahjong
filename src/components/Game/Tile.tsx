@@ -74,7 +74,7 @@ const getTileColor = (tile: TileType) => {
     return '#34495e';
 };
 
-export default function Tile({ tile, onClick, isHinted }: TileProps) {
+const Tile = React.memo(({ tile, onClick, isHinted }: TileProps) => {
     // Tile Dimensions:
     // Base width/height. We scale using CSS font-size.
 
@@ -112,4 +112,16 @@ export default function Tile({ tile, onClick, isHinted }: TileProps) {
             </div>
         </div>
     );
-}
+}, (prev, next) => {
+    // Custom comparison for performance
+    return prev.tile.id === next.tile.id &&
+        prev.tile.isClickable === next.tile.isClickable &&
+        prev.tile.isSelected === next.tile.isSelected &&
+        prev.isHinted === next.isHinted &&
+        prev.tile.isVisible === next.tile.isVisible &&
+        prev.tile.x === next.tile.x && // Should not change usually
+        prev.tile.y === next.tile.y &&
+        prev.tile.z === next.tile.z;
+});
+
+export default Tile;
