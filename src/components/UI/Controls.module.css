@@ -51,12 +51,32 @@
     animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.actions {
+/* Desktop/Base Layout */
+.controlsContainer {
     display: flex;
     gap: 12px;
     align-items: center;
-    flex-wrap: wrap;
-    /* Safety for desktop too */
+}
+
+.actionsRow,
+.settingsRow {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.modeBtn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .iconGroup {
@@ -156,50 +176,72 @@
     .controlsBar {
         flex-direction: column;
         gap: 12px;
-        padding: 12px;
-        /* Reduce padding slightly */
+        padding: 12px 12px calc(env(safe-area-inset-bottom, 20px) + 12px);
     }
 
     .stats {
         width: 100%;
         justify-content: space-between;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
 
-    .actions {
+    .controlsContainer {
         width: 100%;
         display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    /* Row 1: Actions */
+    .actionsRow {
+        display: flex;
+        justify-content: space-between;
         gap: 8px;
-        /* Tighter gap */
+        width: 100%;
     }
 
-    /* Make main action buttons take flexibility but don't force too wide */
-    .actionBtn {
-        flex: 1 1 auto;
-        /* flexible */
-        min-width: 80px;
-        /* Reduced from 100px */
-        justify-content: center;
-        padding: 10px;
-        font-size: 0.8rem;
+    /* Row 2: Settings */
+    .settingsRow {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
     }
 
+    .actionBtn,
     .diffBtn {
-        flex: 1 1 auto;
-        min-width: 80px;
-        justify-content: center;
-        padding: 10px;
+        flex: 1;
+        min-width: 0;
+        /* Allow shrinking */
+        padding: 10px 4px;
         font-size: 0.8rem;
+        white-space: nowrap;
+        justify-content: center;
     }
 
-    /* Icon buttons (Sound, Lang, Help) */
+    .modeBtn {
+        flex: 1;
+        /* Take remaining space */
+        padding: 10px 12px;
+        border: none;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .iconGroup {
+        display: flex;
+        gap: 8px;
+    }
+
     .iconBtn {
-        width: 44px;
-        /* Standard touch size */
-        height: 44px;
-        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
     }
 }
 

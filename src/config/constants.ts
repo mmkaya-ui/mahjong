@@ -16,7 +16,7 @@ export const AUDIO_CONSTANTS = {
 
 export const GAME_CONSTANTS = {
     SCORE_MATCH: 10,
-    HINT_IDLE_MS: 10000,
+    HINT_IDLE_MS: 15000,
     HINT_CHECK_INTERVAL: 2000,
     TILE_WIDTH: 74, // Approximate visual width
     TILE_HEIGHT: 102

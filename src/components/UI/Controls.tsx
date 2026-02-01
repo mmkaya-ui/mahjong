@@ -43,49 +43,57 @@ export default function Controls({ onOpenSound }: Props) {
                     {isWon && <div className={styles.wonBadge}>{t.game.won}</div>}
                 </div>
 
-                <div className={styles.actions}>
-                    <button className={styles.actionBtn} onClick={shuffle} aria-label={t.game.shuffle}>
-                        <Shuffle size={18} />
-                        <span>{t.game.shuffle}</span>
-                    </button>
-                    <button className={styles.actionBtn} onClick={requestHint} aria-label={t.game.hint}>
-                        <Lightbulb size={18} />
-                        <span>{t.game.hint}</span>
-                    </button>
-                    <button
-                        className={styles.diffBtn}
-                        onClick={toggleDifficulty}
-                        style={{
-                            background: difficulty === 'easy' ? '#2ecc71' : difficulty === 'hard' ? '#e74c3c' : '#f1c40f',
-                            color: '#fff',
-                        }}
-                        title="Change Difficulty"
-                    >
-                        <Signal size={16} />
-                        <span>{t.difficulties[difficulty]}</span>
-                    </button>
-                    <button
-                        className={styles.diffBtn}
-                        onClick={() => setGameMode(gameMode === 'zen' ? 'realism' : 'zen')}
-                        style={{
-                            background: gameMode === 'zen' ? '#1abc9c' : '#8e44ad',
-                            color: '#fff'
-                        }}
-                        title="Change Game Mode"
-                    >
-                        <span>{gameMode === 'zen' ? `☯️ ${t.modes.zen}` : `🎲 ${t.modes.realism}`}</span>
-                    </button>
-                    <div className={styles.iconGroup}>
-                        <button className={styles.iconBtn} onClick={onOpenSound} aria-label="Sound Settings">
-                            <Volume2 size={20} />
+                <div className={styles.controlsContainer}>
+                    {/* Row 1: Game Actions */}
+                    <div className={styles.actionsRow}>
+                        <button className={styles.actionBtn} onClick={shuffle} aria-label={t.game.shuffle}>
+                            <Shuffle size={18} />
+                            <span>{t.game.shuffle}</span>
                         </button>
-                        <button className={styles.iconBtn} onClick={toggleLanguage} aria-label="Change Language">
-                            <Globe size={20} />
-                            <span className={styles.langBadgbe}>{language.toUpperCase()}</span>
+                        <button className={styles.actionBtn} onClick={requestHint} aria-label={t.game.hint}>
+                            <Lightbulb size={18} />
+                            <span>{t.game.hint}</span>
                         </button>
-                        <button className={styles.iconBtn} onClick={() => setIsHelpOpen(true)} aria-label="Help">
-                            <CircleHelp size={20} />
+                        <button
+                            className={styles.diffBtn}
+                            onClick={toggleDifficulty}
+                            style={{
+                                background: difficulty === 'easy' ? '#2ecc71' : difficulty === 'hard' ? '#e74c3c' : '#f1c40f',
+                                color: '#fff',
+                            }}
+                            title="Change Difficulty"
+                        >
+                            <Signal size={16} />
+                            <span>{t.difficulties[difficulty]}</span>
                         </button>
+                    </div>
+
+                    {/* Row 2: Settings & Modes */}
+                    <div className={styles.settingsRow}>
+                        <button
+                            className={styles.modeBtn}
+                            onClick={() => setGameMode(gameMode === 'zen' ? 'realism' : 'zen')}
+                            style={{
+                                background: gameMode === 'zen' ? '#1abc9c' : '#8e44ad',
+                                color: '#fff'
+                            }}
+                            title="Change Game Mode"
+                        >
+                            <span>{gameMode === 'zen' ? `☯️ ${t.modes.zen}` : `🎲 ${t.modes.realism}`}</span>
+                        </button>
+
+                        <div className={styles.iconGroup}>
+                            <button className={styles.iconBtn} onClick={onOpenSound} aria-label="Sound Settings">
+                                <Volume2 size={20} />
+                            </button>
+                            <button className={styles.iconBtn} onClick={toggleLanguage} aria-label="Change Language">
+                                <Globe size={20} />
+                                <span className={styles.langBadgbe}>{language.toUpperCase()}</span>
+                            </button>
+                            <button className={styles.iconBtn} onClick={() => setIsHelpOpen(true)} aria-label="Help">
+                                <CircleHelp size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
