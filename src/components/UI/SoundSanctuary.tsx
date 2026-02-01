@@ -14,13 +14,13 @@ export default function SoundSanctuary({ onClose }: Props) {
     const { t } = useLanguage();
 
     const frequencies = [
-        { id: 'off', label: 'OFF', desc: 'Silence' },
-        { id: '396', label: '396 Hz', desc: 'Liberation of Fear' },
-        { id: '432', label: '432 Hz', desc: 'Peace & Nature' },
-        { id: '528', label: '528 Hz', desc: 'Repair & Love' },
-        { id: '639', label: '639 Hz', desc: 'Connection' },
-        { id: '741', label: '741 Hz', desc: 'Awakening Intuition' },
-        { id: '852', label: '852 Hz', desc: 'Spiritual Order' },
+        { id: 'off', label: t.sounds.off.toUpperCase(), desc: t.sounds.frequencies.off },
+        { id: '396', label: '396 Hz', desc: t.sounds.frequencies.f396 },
+        { id: '432', label: '432 Hz', desc: t.sounds.frequencies.f432 },
+        { id: '528', label: '528 Hz', desc: t.sounds.frequencies.f528 },
+        { id: '639', label: '639 Hz', desc: t.sounds.frequencies.f639 },
+        { id: '741', label: '741 Hz', desc: t.sounds.frequencies.f741 },
+        { id: '852', label: '852 Hz', desc: t.sounds.frequencies.f852 },
     ] as const;
 
     return (
@@ -28,7 +28,7 @@ export default function SoundSanctuary({ onClose }: Props) {
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 <div className={styles.header}>
                     <h2>{t.settings.soundSanctuary}</h2>
-                    <button className={styles.closeBtn} onClick={onClose} aria-label="Close">×</button>
+                    <button className={styles.closeBtn} onClick={onClose} aria-label={t.settings.back}>×</button>
                 </div>
 
                 <div className={styles.scrollContent}>
@@ -39,12 +39,12 @@ export default function SoundSanctuary({ onClose }: Props) {
                             className={`${styles.playBtn} ${isPlaying ? styles.playing : ''}`}
                             onClick={togglePlay}
                         >
-                            {isPlaying ? '⏸ PAUSE AUDIO' : '▶ START AUDIO'}
+                            {isPlaying ? `⏸ ${t.settings.pauseAudio.toUpperCase()}` : `▶ ${t.settings.playAudio.toUpperCase()}`}
                         </button>
                     </div>
 
                     <div className={styles.section}>
-                        <h3>Healing Frequencies</h3>
+                        <h3>{t.settings.healingFrequencies}</h3>
                         <div className={styles.gridOptions}>
                             {frequencies.map((f) => (
                                 <button
@@ -60,31 +60,31 @@ export default function SoundSanctuary({ onClose }: Props) {
                     </div>
 
                     <div className={styles.section}>
-                        <h3>Nature Mixer 🌿</h3>
+                        <h3>{t.settings.natureMixer} 🌿</h3>
                         <div className={styles.mixerStack}>
                             <button
                                 className={`${styles.mixerBtn} ${layers.rain ? styles.activeLayer : ''}`}
                                 onClick={() => toggleLayer('rain')}
                             >
-                                🌧️ Rain
+                                🌧️ {t.sounds.rain}
                             </button>
                             <button
                                 className={`${styles.mixerBtn} ${layers.birds ? styles.activeLayer : ''}`}
                                 onClick={() => toggleLayer('birds')}
                             >
-                                🐦 Birds (Chirping)
+                                🐦 {t.sounds.birds}
                             </button>
                             <button
                                 className={`${styles.mixerBtn} ${layers.waves ? styles.activeLayer : ''}`}
                                 onClick={() => toggleLayer('waves')}
                             >
-                                🌊 Ocean Waves
+                                🌊 {t.sounds.waves}
                             </button>
                         </div>
                     </div>
 
                     <div className={styles.section}>
-                        <h3>Master Volume</h3>
+                        <h3>{t.settings.masterVolume}</h3>
                         <input
                             type="range"
                             min="0"

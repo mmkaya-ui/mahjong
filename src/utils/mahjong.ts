@@ -1,4 +1,5 @@
 import { TilePosition } from './layouts';
+import { BoardEngine } from '@/core/game/BoardEngine';
 
 export interface Tile extends TilePosition {
     id: string; // unique id
@@ -71,42 +72,7 @@ export function generateDeck(targetCount: number = 144): Omit<Tile, 'x' | 'y' | 
     return deck;
 }
 
-export function isBlocked(tile: Tile, allTiles: Tile[]): boolean {
-    // A tile is blocked if:
-    // 1. There is a tile directly on top (z + 1) covering any part of it.
-    // 2. There are tiles on BOTH left and right sides (same z).
-    //    (Or blocked on left OR right? Standard Mahjong is accessible if Left OR Right is free)
-    //    Wait, standard rule: "A tile is free if it has no tile on top AND it has a free space on either its left or right side."
-
-    // Checking Top:
-    // Tiles are 2x2. Overlap happens if distance < 2.
-    const hasTop = allTiles.some(other =>
-        other.z === tile.z + 1 &&
-        Math.abs(other.x - tile.x) < 2 &&
-        Math.abs(other.y - tile.y) < 2
-    );
-    if (hasTop) return true;
-
-    // Checking Sides (Left/Right) at same Z
-    // Left: x - 2. Right: x + 2.
-    // Overlap on Y axis must be significant (almost full overlap).
-    // Actually, purely grid based: adjacent implies |dx| = 2.
-    // If there's a tile at x-2 overlapping in Y.
-
-    const hasLeft = allTiles.some(other =>
-        other.z === tile.z &&
-        other.x === tile.x - 2 &&
-        Math.abs(other.y - tile.y) < 2
-    );
-
-    const hasRight = allTiles.some(other =>
-        other.z === tile.z &&
-        other.x === tile.x + 2 &&
-        Math.abs(other.y - tile.y) < 2
-    );
-
-    return hasLeft && hasRight;
-}
+// NOTE: functions isBlocked removed, use BoardEngine
 
 export function canMatch(t1: Tile, t2: Tile): boolean {
     if (t1.id === t2.id) return false;
@@ -201,8 +167,9 @@ export function generateSolvableBoard(layout: TilePosition[], deck: Omit<Tile, '
     while (pendingPositions.length > 0) {
         // Find available positions
         // A position is available if !isBlocked.
-        // But `isBlocked` expects `Tile[]`. `pendingPositions` has x,y,z.
-        // We can cast / adapt.
+        // We use BoardEngine.
+
+        // Adapt pendingPositions to Tile[] for Engine
         const currentBoardForCheck = pendingPositions.map(p => ({
             ...p,
             id: `temp-${p.tempId}`,
@@ -211,46 +178,34 @@ export function generateSolvableBoard(layout: TilePosition[], deck: Omit<Tile, '
             isVisible: true,
             isClickable: true,
             isSelected: false
-        }));
+        } as Tile));
+
+        const engine = new BoardEngine(currentBoardForCheck);
+        // Engine's isBlocked is much faster.
 
         const availableIndices = pendingPositions
             .map((_, i) => i)
-            .filter(i => !isBlocked(currentBoardForCheck[i], currentBoardForCheck));
+            .filter(i => !engine.isBlocked(currentBoardForCheck[i]));
 
         if (availableIndices.length < 2) {
-            // deadlock or finished?
-            // If < 2 but positions > 0, we are stuck. 
-            // This happens if the layout itself is invalid (e.g. strict overlap cycle) OR standard generation luck.
-            // But since we are removing from the "Outside in" (standard play), if the layout is valid, there should always be >2.
-            // Unless only 1 tile left? (Not possible with pairs).
-            /*
-             * Fallback: If layout is weird and we get stuck, we might need to backtrack or just break.
-             * Ideally we error out and retry, but for now let's just break to avoid infinite loop.
-            */
             if (pendingPositions.length > 0) {
                 console.error("Layout Stuck! No available moves during generation.");
                 break;
             }
         }
 
-        // Strategy: To make it "Random" but "Solvable", we pick 2 available positions randomly.
-        // To make it "Good Layout" (user request), maybe we prioritize something?
-        // Random is fine for now.
         const idx1 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
         let idx2 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
         while (idx1 === idx2 && availableIndices.length > 1) {
             idx2 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
         }
 
-        // We have 2 positions.
         const pos1 = pendingPositions[idx1];
         const pos2 = pendingPositions[idx2];
 
-        // We have a pair of values
         const pair = pairs.pop();
-        if (!pair) break; // Run out of tiles
+        if (!pair) break;
 
-        // Assign
         assignedTiles.push({
             ...pos1,
             id: pair[0].id,
@@ -271,8 +226,6 @@ export function generateSolvableBoard(layout: TilePosition[], deck: Omit<Tile, '
             isSelected: false
         } as Tile);
 
-        // Remove from pending (conceptually "played")
-        // Note: Removing by index affects indices. Filter is safer.
         pendingPositions = pendingPositions.filter(p => p.tempId !== pos1.tempId && p.tempId !== pos2.tempId);
     }
 

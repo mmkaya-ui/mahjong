@@ -6,6 +6,7 @@ import { useGame } from '@/context/GameContext';
 import { useLanguage } from '@/context/LanguageContext';
 import styles from './Controls.module.css';
 import HelpModal from './HelpModal';
+import Celebration from './Celebration';
 
 interface Props {
     onOpenSound: () => void;
@@ -22,9 +23,9 @@ export default function Controls({ onOpenSound }: Props) {
     };
 
     const toggleDifficulty = () => {
-        const next: Record<string, 'easy' | 'standard' | 'hard'> = {
-            easy: 'standard',
-            standard: 'hard',
+        const next: Record<string, 'easy' | 'normal' | 'hard'> = {
+            easy: 'normal',
+            normal: 'hard',
             hard: 'easy'
         };
         setDifficulty(next[difficulty]);
@@ -32,6 +33,7 @@ export default function Controls({ onOpenSound }: Props) {
 
     return (
         <>
+            {isWon && <Celebration />}
             <div className={styles.controlsBar}>
                 <div className={styles.stats}>
                     <div className={styles.scoreBlock}>
@@ -55,12 +57,12 @@ export default function Controls({ onOpenSound }: Props) {
                         onClick={toggleDifficulty}
                         style={{
                             background: difficulty === 'easy' ? '#2ecc71' : difficulty === 'hard' ? '#e74c3c' : '#f1c40f',
-                            color: '#fff'
+                            color: '#fff',
                         }}
                         title="Change Difficulty"
                     >
                         <Signal size={16} />
-                        <span>{difficulty.toUpperCase()}</span>
+                        <span>{t.difficulties[difficulty]}</span>
                     </button>
                     <button
                         className={styles.diffBtn}
@@ -73,16 +75,18 @@ export default function Controls({ onOpenSound }: Props) {
                     >
                         <span>{gameMode === 'zen' ? '☯️ ZEN' : '🎲 REAL'}</span>
                     </button>
-                    <button className={styles.iconBtn} onClick={onOpenSound} aria-label="Sound Settings">
-                        <Volume2 size={20} />
-                    </button>
-                    <button className={styles.iconBtn} onClick={toggleLanguage} aria-label="Change Language">
-                        <Globe size={20} />
-                        <span className={styles.langBadgbe}>{language.toUpperCase()}</span>
-                    </button>
-                    <button className={styles.iconBtn} onClick={() => setIsHelpOpen(true)} aria-label="Help">
-                        <CircleHelp size={20} />
-                    </button>
+                    <div className={styles.iconGroup}>
+                        <button className={styles.iconBtn} onClick={onOpenSound} aria-label="Sound Settings">
+                            <Volume2 size={20} />
+                        </button>
+                        <button className={styles.iconBtn} onClick={toggleLanguage} aria-label="Change Language">
+                            <Globe size={20} />
+                            <span className={styles.langBadgbe}>{language.toUpperCase()}</span>
+                        </button>
+                        <button className={styles.iconBtn} onClick={() => setIsHelpOpen(true)} aria-label="Help">
+                            <CircleHelp size={20} />
+                        </button>
+                    </div>
                 </div>
 
                 {isWon && (

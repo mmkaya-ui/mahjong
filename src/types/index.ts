@@ -10,16 +10,38 @@ export interface Translations {
         gameOver: string;
         score: string;
     };
+    sounds: {
+        healing: string;
+        nature: string;
+        off: string;
+        rain: string;
+        birds: string;
+        waves: string;
+        frequencies: {
+            off: string;
+            f396: string;
+            f432: string;
+            f528: string;
+            f639: string;
+            f741: string;
+            f852: string;
+        };
+    };
+    difficulties: {
+        easy: string;
+        normal: string;
+        hard: string;
+    };
     settings: {
         title: string;
         soundSanctuary: string;
         language: string;
         back: string;
-    };
-    sounds: {
-        healing: string;
-        nature: string;
-        off: string;
+        playAudio: string;
+        pauseAudio: string;
+        healingFrequencies: string;
+        natureMixer: string;
+        masterVolume: string;
     };
     help: {
         title: string;

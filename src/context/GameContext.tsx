@@ -1,11 +1,13 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { Tile, generateDeck, isBlocked, canMatch, shuffleTiles, generateSolvableBoard } from '@/utils/mahjong';
+import { Tile, generateDeck, canMatch, shuffleTiles, generateSolvableBoard } from '@/utils/mahjong';
 import { TURTLE_LAYOUT, EASY_LAYOUT, HARD_LAYOUT } from '@/utils/layouts';
 import { useAudio } from './AudioContext';
+import { BoardEngine } from '@/core/game/BoardEngine';
+import { GAME_CONSTANTS } from '@/config/constants';
 
-type Difficulty = 'easy' | 'standard' | 'hard';
+type Difficulty = 'easy' | 'normal' | 'hard';
 
 interface GameContextType {
     tiles: Tile[];
@@ -34,7 +36,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const [selectedTile, setSelectedTile] = useState<Tile | null>(null);
     const [hint, setHint] = useState<Tile[] | null>(null);
     const [isWon, setIsWon] = useState(false);
-    const [difficulty, setDifficulty] = useState<Difficulty>('standard');
+    const [difficulty, setDifficulty] = useState<Difficulty>('normal');
     const [gameMode, setGameMode] = useState<'zen' | 'realism'>('zen');
 
     const lastInteractionRef = useRef<number>(Date.now());
@@ -45,10 +47,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         if (difficulty !== 'easy') return;
         const checkIdle = setInterval(() => {
             const now = Date.now();
-            if (now - lastInteractionRef.current > 10000 && !hint && !isWon) {
+            if (now - lastInteractionRef.current > GAME_CONSTANTS.HINT_IDLE_MS && !hint && !isWon) {
                 requestHint();
             }
-        }, 2000);
+        }, GAME_CONSTANTS.HINT_CHECK_INTERVAL);
         return () => clearInterval(checkIdle);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [difficulty, hint, isWon, tiles]);
@@ -67,7 +69,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
         let deck = generateDeck(layout.length);
 
-        // Safety: ensure deck is large enough or trimmed
         if (deck.length > layout.length) {
             deck = deck.slice(0, layout.length);
         }
@@ -76,7 +77,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
         if (gameMode === 'realism') {
             // True Random Shuffle
-            // Shuffle deck first
             for (let i = deck.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -87,21 +87,17 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 type: deck[i].type,
                 value: deck[i].value,
                 isVisible: true,
-                isClickable: true, // calc below
+                isClickable: true,
                 isSelected: false
             } as Tile));
         } else {
-            // Zen Mode: Solvable Generator
+            // Zen Mode: Solvable
             initialTiles = generateSolvableBoard(layout, deck);
         }
 
-        // Final update of state properties
-        const readyTiles = initialTiles.map(t => ({
-            ...t,
-            isVisible: true,
-            isClickable: !isBlocked(t, initialTiles),
-            isSelected: false
-        }));
+        // Optimized Engine Update
+        const engine = new BoardEngine(initialTiles);
+        const readyTiles = engine.updateAllStatus(initialTiles);
 
         setTiles(readyTiles);
         setScore(0);
@@ -130,32 +126,28 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (selectedTile) {
-            // Attempt match
             if (canMatch(selectedTile, tile)) {
                 // MATCH!
-                const newScore = score + 10; // Simple scoring
+                const newScore = score + GAME_CONSTANTS.SCORE_MATCH;
                 setScore(newScore);
                 setMatches(m => m + 1);
 
                 // Remove tiles
                 const remaining = tiles.filter(t => t.id !== selectedTile.id && t.id !== tile.id);
 
-                // Recalculate clickability for ALL remaining tiles (could be optimized)
-                const updated = remaining.map(t => ({
-                    ...t,
-                    isClickable: !isBlocked(t, remaining),
-                    isSelected: false
-                }));
+                // Optimized Update
+                const engine = new BoardEngine(remaining);
+                const updated = engine.updateAllStatus(remaining);
 
                 setTiles(updated);
                 setSelectedTile(null);
-                setHint(null); // Clear hint on move
+                setHint(null);
 
                 if (updated.length === 0) {
                     setIsWon(true);
                 }
             } else {
-                // No match, swap selection
+                // No match
                 setTiles(prev => prev.map(t => {
                     if (t.id === selectedTile.id) return { ...t, isSelected: false };
                     if (t.id === tile.id) return { ...t, isSelected: true };
@@ -164,7 +156,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 setSelectedTile(tile);
             }
         } else {
-            // Select first
             setTiles(prev => prev.map(t => t.id === tile.id ? { ...t, isSelected: true } : t));
             setSelectedTile(tile);
         }
@@ -173,19 +164,16 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const shuffle = () => {
         lastInteractionRef.current = Date.now();
         const shuffled = shuffleTiles(tiles);
-        // Recalculate blocked status (positions same, but just safety)
-        const updated = shuffled.map(t => ({
-            ...t,
-            isClickable: !isBlocked(t, shuffled),
-            isSelected: false
-        }));
+
+        const engine = new BoardEngine(shuffled);
+        const updated = engine.updateAllStatus(shuffled);
+
         setTiles(updated);
         setSelectedTile(null);
         setHint(null);
     };
 
     const requestHint = () => {
-        // Find any open pair
         const openTiles = tiles.filter(t => t.isClickable);
         for (let i = 0; i < openTiles.length; i++) {
             for (let j = i + 1; j < openTiles.length; j++) {
@@ -203,7 +191,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 tiles,
                 score,
                 matches,
-                isGameOver: false, // TODO: Implement check for no moves
+                isGameOver: false,
                 isWon,
                 selectedTile,
                 selectTile,

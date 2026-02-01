@@ -54,6 +54,16 @@
 .actions {
     display: flex;
     gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    /* Safety for desktop too */
+}
+
+.iconGroup {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-shrink: 0;
 }
 
 .actionBtn {
@@ -142,31 +152,54 @@
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
     .controlsBar {
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
+        padding: 12px;
+        /* Reduce padding slightly */
+    }
+
+    .stats {
+        width: 100%;
+        justify-content: space-between;
+        margin-bottom: 4px;
     }
 
     .actions {
         width: 100%;
-        justify-content: space-between;
-    }
-
-    .actionBtn {
-        flex: 1;
+        display: flex;
+        flex-wrap: wrap;
         justify-content: center;
-        padding: 12px 10px;
+        gap: 8px;
+        /* Tighter gap */
     }
 
-    .actionBtn span {
-        display: none;
-        /* Hide text on very small screens? Option, but keeping for now */
-    }
-
-    /* Actually let's keep text but make font smaller */
+    /* Make main action buttons take flexibility but don't force too wide */
     .actionBtn {
-        font-size: 0.9rem;
+        flex: 1 1 auto;
+        /* flexible */
+        min-width: 80px;
+        /* Reduced from 100px */
+        justify-content: center;
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+
+    .diffBtn {
+        flex: 1 1 auto;
+        min-width: 80px;
+        justify-content: center;
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+
+    /* Icon buttons (Sound, Lang, Help) */
+    .iconBtn {
+        width: 44px;
+        /* Standard touch size */
+        height: 44px;
+        flex: 0 0 auto;
     }
 }
 
