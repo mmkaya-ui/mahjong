@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Tile, generateDeck, canMatch, shuffleTiles, generateSolvableBoard } from '@/utils/mahjong';
 import { TURTLE_LAYOUT, EASY_LAYOUT, HARD_LAYOUT } from '@/utils/layouts';
 import { useAudio } from './AudioContext';
@@ -46,7 +46,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const [gameId, setGameId] = useState(0); // For forcing re-renders
 
     // Hardcore mode specific
-    const [shufflesRemaining, setShufflesRemaining] = useState(GAME_CONSTANTS.FREE_SHUFFLES);
+    const [shufflesRemaining, setShufflesRemaining] = useState<number>(GAME_CONSTANTS.FREE_SHUFFLES);
 
     const lastInteractionRef = useRef<number>(Date.now());
     const { playClickSound } = useAudio();
