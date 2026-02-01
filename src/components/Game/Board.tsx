@@ -7,7 +7,7 @@ import styles from './Board.module.css';
 import { TURTLE_LAYOUT, EASY_LAYOUT, HARD_LAYOUT } from '@/utils/layouts';
 
 export default function Board() {
-    const { tiles, selectTile, hint, difficulty } = useGame();
+    const { tiles, selectTile, hint, difficulty, gameId } = useGame();
     const boardRef = useRef<HTMLDivElement>(null);
     const [viewState, setViewState] = useState({ scale: 1, shiftX: 0, shiftY: 0 });
 
@@ -91,6 +91,7 @@ export default function Board() {
     return (
         <div className={styles.boardContainer}>
             <div
+                key={gameId}
                 ref={boardRef}
                 className={styles.boardContent}
                 style={{ transform: `scale(${viewState.scale}) translate(${viewState.shiftX}px, ${viewState.shiftY}px)` }}

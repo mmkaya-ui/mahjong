@@ -155,123 +155,128 @@ export function shuffleTiles(currentTiles: Tile[]): Tile[] {
 }
 
 export function generateSolvableBoard(layout: TilePosition[], deck: Omit<Tile, 'x' | 'y' | 'z' | 'isVisible' | 'isClickable' | 'isSelected'>[]): Tile[] {
-    // 1. Clone layout to track "remaining" tiles during generation
-    // We strictly need to simulate the game in reverse? 
-    // Actually, we simulate "Playing the game" to remove tiles, but we assign values as we go.
-    // So: Start with FULL board of Unassigned tiles.
-    // Find tiles that CAN be removed (unblocked).
-    // Pick 2. Assign them a matching pair from the deck.
-    // Remove them. 
-    // Repeat.
+    // Retry loop to prevent stuck generation
+    const MAX_ATTEMPTS = 5;
 
-    // We need to track which positions are currently "on the board" to calculate blocking.
-    // Initially ALL layout positions are on the board.
-    let pendingPositions = layout.map((p, i) => ({ ...p, id: `pos-${i}`, tempId: i }));
-    const assignedTiles: Tile[] = [];
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        try {
+            // 1. Clone layout to track "remaining" tiles during generation
+            let pendingPositions = layout.map((p, i) => ({ ...p, id: `pos-${i}`, tempId: i }));
+            const assignedTiles: Tile[] = [];
 
-    // Shuffle the deck of values (pairs) so we assign random pairs
-    // The deck needs to be pairs. generateDeck returns a flat list.
-    // We should group them or just pop 2 matching? 
-    // Deck is already fully populated. We just shuffle it.
-    const shuffledDeck = [...deck];
-    for (let i = shuffledDeck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledDeck[i], shuffledDeck[j]] = [shuffledDeck[j], shuffledDeck[i]];
-    }
-
-    // We need to pair them up.
-    // Actually simpler: Just sort deck by type+value to find pairs easily, THEN shuffle the PAIRS?
-    // No, standard deck has 4 of each usually.
-    // Let's just take the shuffled deck, find a match for the first item, remove both, use them.
-    // Performance might be poor if we search every time.
-    // Better: Group deck into pairs first.
-    const pairs: [typeof deck[0], typeof deck[0]][] = [];
-    while (shuffledDeck.length >= 2) {
-        const first = shuffledDeck.pop()!;
-        // Find a match
-        const matchIndex = shuffledDeck.findIndex(t => canMatch({ ...t, x: 0, y: 0, z: 0, isVisible: true, isClickable: true, isSelected: false, id: 'temp' }, { ...first, x: 0, y: 0, z: 0, isVisible: true, isClickable: true, isSelected: false, id: 'temp2' }));
-
-        if (matchIndex !== -1) {
-            const second = shuffledDeck.splice(matchIndex, 1)[0];
-            pairs.push([first, second]);
-        } else {
-            // Should not happen in a proper mahjong deck unless odd count
-            console.warn("Odd tile found during pair generation", first);
-        }
-    }
-
-    // Shuffle the pairs
-    for (let i = pairs.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
-    }
-
-    // Simulation Loop
-    // While positions remain:
-    while (pendingPositions.length > 0) {
-        // Find available positions
-        // A position is available if !isBlocked.
-        // We use BoardEngine.
-
-        // Adapt pendingPositions to Tile[] for Engine
-        const currentBoardForCheck = pendingPositions.map(p => ({
-            ...p,
-            id: `temp-${p.tempId}`,
-            type: 'dummy',
-            value: 0,
-            isVisible: true,
-            isClickable: true,
-            isSelected: false
-        } as Tile));
-
-        const engine = new BoardEngine(currentBoardForCheck);
-        // Engine's isBlocked is much faster.
-
-        const availableIndices = pendingPositions
-            .map((_, i) => i)
-            .filter(i => !engine.isBlocked(currentBoardForCheck[i]));
-
-        if (availableIndices.length < 2) {
-            if (pendingPositions.length > 0) {
-                console.error("Layout Stuck! No available moves during generation.");
-                break;
+            const shuffledDeck = [...deck];
+            // Shuffle Deck
+            for (let i = shuffledDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledDeck[i], shuffledDeck[j]] = [shuffledDeck[j], shuffledDeck[i]];
             }
+
+            // Create Pairs
+            const pairs: [typeof deck[0], typeof deck[0]][] = [];
+            while (shuffledDeck.length >= 2) {
+                const first = shuffledDeck.pop()!;
+                const matchIndex = shuffledDeck.findIndex(t => canMatch({ ...t, x: 0, y: 0, z: 0, isVisible: true, isClickable: true, isSelected: false, id: 'temp' }, { ...first, x: 0, y: 0, z: 0, isVisible: true, isClickable: true, isSelected: false, id: 'temp2' }));
+
+                if (matchIndex !== -1) {
+                    const second = shuffledDeck.splice(matchIndex, 1)[0];
+                    pairs.push([first, second]);
+                }
+            }
+
+            // Shuffle pairs
+            for (let i = pairs.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
+            }
+
+            // Simulation Loop
+            while (pendingPositions.length > 0) {
+                const currentBoardForCheck = pendingPositions.map(p => ({
+                    ...p,
+                    id: `temp-${p.tempId}`,
+                    type: 'dummy',
+                    value: 0,
+                    isVisible: true,
+                    isClickable: true,
+                    isSelected: false
+                } as Tile));
+
+                const engine = new BoardEngine(currentBoardForCheck);
+
+                const availableIndices = pendingPositions
+                    .map((_, i) => i)
+                    .filter(i => !engine.isBlocked(currentBoardForCheck[i]));
+
+                if (availableIndices.length < 2) {
+                    // Stuck! Throw to retry.
+                    throw new Error("Layout Stuck! No available moves during generation.");
+                }
+
+                const idx1 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+                let idx2 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+                // Ensure distinct
+                let retries = 0;
+                while (idx1 === idx2 && availableIndices.length > 1 && retries < 10) {
+                    idx2 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+                    retries++;
+                }
+
+                if (idx1 === idx2) throw new Error("Could not find distinct pair");
+
+                const pos1 = pendingPositions[idx1];
+                const pos2 = pendingPositions[idx2];
+
+                const pair = pairs.pop();
+                if (!pair) break; // Should not happen if count matches
+
+                assignedTiles.push({
+                    ...pos1,
+                    id: pair[0].id,
+                    type: pair[0].type,
+                    value: pair[0].value,
+                    isVisible: true,
+                    isClickable: true,
+                    isSelected: false
+                } as Tile);
+
+                assignedTiles.push({
+                    ...pos2,
+                    id: pair[1].id,
+                    type: pair[1].type,
+                    value: pair[1].value,
+                    isVisible: true,
+                    isClickable: true,
+                    isSelected: false
+                } as Tile);
+
+                pendingPositions = pendingPositions.filter(p => p.tempId !== pos1.tempId && p.tempId !== pos2.tempId);
+            }
+
+            // Validation
+            if (assignedTiles.length === layout.length) {
+                return assignedTiles;
+            }
+        } catch (e) {
+            console.warn(`Generation attempt ${attempt + 1} failed, retrying...`);
+            continue;
         }
-
-        const idx1 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-        let idx2 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-        while (idx1 === idx2 && availableIndices.length > 1) {
-            idx2 = availableIndices[Math.floor(Math.random() * availableIndices.length)];
-        }
-
-        const pos1 = pendingPositions[idx1];
-        const pos2 = pendingPositions[idx2];
-
-        const pair = pairs.pop();
-        if (!pair) break;
-
-        assignedTiles.push({
-            ...pos1,
-            id: pair[0].id,
-            type: pair[0].type,
-            value: pair[0].value,
-            isVisible: true,
-            isClickable: true,
-            isSelected: false
-        } as Tile);
-
-        assignedTiles.push({
-            ...pos2,
-            id: pair[1].id,
-            type: pair[1].type,
-            value: pair[1].value,
-            isVisible: true,
-            isClickable: true,
-            isSelected: false
-        } as Tile);
-
-        pendingPositions = pendingPositions.filter(p => p.tempId !== pos1.tempId && p.tempId !== pos2.tempId);
     }
 
-    return assignedTiles;
+    // Fail safe: Random (Unsolvable Risk) but better than crash
+    console.error("Solvable generation failed 5 attempts. Falling back to simple random shuffle.");
+    // Just map layout to deck
+    const failSafeDeck = [...deck];
+    for (let i = failSafeDeck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [failSafeDeck[i], failSafeDeck[j]] = [failSafeDeck[j], failSafeDeck[i]];
+    }
+    return layout.map((pos, i) => ({
+        ...pos,
+        id: failSafeDeck[i]?.id || `failsafe-${i}`,
+        type: failSafeDeck[i]?.type || 'dots',
+        value: failSafeDeck[i]?.value || 1,
+        isVisible: true,
+        isClickable: true,
+        isSelected: false
+    } as Tile));
 }

@@ -25,6 +25,7 @@ interface GameContextType {
     setDifficulty: (diff: Difficulty) => void;
     gameMode: 'zen' | 'realism';
     setGameMode: (mode: 'zen' | 'realism') => void;
+    gameId: number;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -38,6 +39,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const [isWon, setIsWon] = useState(false);
     const [difficulty, setDifficulty] = useState<Difficulty>('normal');
     const [gameMode, setGameMode] = useState<'zen' | 'realism'>('zen');
+    const [gameId, setGameId] = useState(0); // For forcing re-renders
 
     const lastInteractionRef = useRef<number>(Date.now());
     const { playClickSound } = useAudio();
@@ -105,6 +107,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setSelectedTile(null);
         setHint(null);
         setIsWon(false);
+        setGameId(prev => prev + 1);
         lastInteractionRef.current = Date.now();
     }, [difficulty, gameMode]);
 
@@ -229,7 +232,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 difficulty,
                 setDifficulty,
                 gameMode,
-                setGameMode
+                setGameMode,
+                gameId
             }}
         >
             {children}

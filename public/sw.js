@@ -1,4 +1,4 @@
-const CACHE_NAME = 'zen-mahjong-v10';
+const CACHE_NAME = 'zen-mahjong-v11';
 
 self.addEventListener('install', () => {
   self.skipWaiting();
