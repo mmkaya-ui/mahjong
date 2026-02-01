@@ -67,6 +67,18 @@
     transition: all 0.2s;
 }
 
+.diffBtn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+}
+
+.diffBtn:active,
 .actionBtn:active {
     transform: scale(0.95);
 }

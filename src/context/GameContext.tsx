@@ -1,9 +1,11 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Tile, generateDeck, isBlocked, canMatch, shuffleTiles } from '@/utils/mahjong';
-import { TURTLE_LAYOUT } from '@/utils/layouts';
+import { TURTLE_LAYOUT, EASY_LAYOUT, HARD_LAYOUT } from '@/utils/layouts';
 import { useAudio } from './AudioContext';
+
+type Difficulty = 'easy' | 'standard' | 'hard';
 
 interface GameContextType {
     tiles: Tile[];
@@ -17,6 +19,8 @@ interface GameContextType {
     shuffle: () => void;
     hint: Tile[] | null;
     requestHint: () => void;
+    difficulty: Difficulty;
+    setDifficulty: (diff: Difficulty) => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -28,25 +32,58 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const [selectedTile, setSelectedTile] = useState<Tile | null>(null);
     const [hint, setHint] = useState<Tile[] | null>(null);
     const [isWon, setIsWon] = useState(false);
+    const [difficulty, setDifficulty] = useState<Difficulty>('standard');
 
+    const lastInteractionRef = useRef<number>(Date.now());
     const { playClickSound } = useAudio();
 
+    // Auto-hint logic for Easy mode
+    useEffect(() => {
+        if (difficulty !== 'easy') return;
+
+        const checkIdle = setInterval(() => {
+            const now = Date.now();
+            if (now - lastInteractionRef.current > 10000 && !hint && !isWon) {
+                requestHint();
+            }
+        }, 2000);
+
+        return () => clearInterval(checkIdle);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [difficulty, hint, isWon, tiles]); // visual deps
+
     const initGame = useCallback(() => {
-        const deck = generateDeck();
-        // Assign deck to layout
+        let layout = TURTLE_LAYOUT;
+        let targetCount = 144;
+
+        if (difficulty === 'easy') {
+            layout = EASY_LAYOUT;
+            targetCount = 36;
+        } else if (difficulty === 'hard') {
+            layout = HARD_LAYOUT;
+            targetCount = 144;
+        }
+
+        const deck = generateDeck(targetCount);
+        // Determine how many tiles we can actually fit? 
+        // Deck size should match layout size usually.
+        // If layout > deck, trim layout? 
+        // If deck > layout, trim deck?
+
+        // Safer:
+        const finalLayout = layout.slice(0, deck.length);
+
         // Shuffle deck first randomly
         deck.sort(() => Math.random() - 0.5);
 
-        // Take first 144 positions (or max available)
-        const newTiles: Tile[] = TURTLE_LAYOUT.slice(0, deck.length).map((pos, i) => ({
+        const newTiles: Tile[] = finalLayout.map((pos, i) => ({
             ...pos,
             ...deck[i],
             isVisible: true,
-            isClickable: true, // Will calculate
+            isClickable: true,
             isSelected: false
         }));
 
-        // Calculate initial clickability
         const playableTiles = newTiles.map(t => ({
             ...t,
             isClickable: !isBlocked(t, newTiles)
@@ -58,7 +95,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setSelectedTile(null);
         setHint(null);
         setIsWon(false);
-    }, []);
+        lastInteractionRef.current = Date.now();
+    }, [difficulty]);
 
     useEffect(() => {
         initGame();
@@ -67,6 +105,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const selectTile = (tile: Tile) => {
         if (!tile.isClickable) return;
 
+        lastInteractionRef.current = Date.now();
         playClickSound();
 
         if (selectedTile && selectedTile.id === tile.id) {
@@ -91,7 +130,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 const updated = remaining.map(t => ({
                     ...t,
                     isClickable: !isBlocked(t, remaining),
-                    isSelected: false // Clear selection
+                    isSelected: false
                 }));
 
                 setTiles(updated);
@@ -118,6 +157,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     };
 
     const shuffle = () => {
+        lastInteractionRef.current = Date.now();
         const shuffled = shuffleTiles(tiles);
         // Recalculate blocked status (positions same, but just safety)
         const updated = shuffled.map(t => ({
@@ -156,7 +196,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 resetGame: initGame,
                 shuffle,
                 hint,
-                requestHint
+                requestHint,
+                difficulty,
+                setDifficulty
             }}
         >
             {children}

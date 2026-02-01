@@ -16,10 +16,25 @@ const DRAGONS = ['red', 'green', 'white'];
 const FLOWERS = ['plum', 'orchid', 'bamboo', 'chrysanthemum']; // 1 of each
 const SEASONS = ['spring', 'summer', 'autumn', 'winter']; // 1 of each
 
-export function generateDeck(): Omit<Tile, 'x' | 'y' | 'z' | 'isVisible' | 'isClickable' | 'isSelected'>[] {
+export function generateDeck(targetCount: number = 144): Omit<Tile, 'x' | 'y' | 'z' | 'isVisible' | 'isClickable' | 'isSelected'>[] {
     const deck: Omit<Tile, 'x' | 'y' | 'z' | 'isVisible' | 'isClickable' | 'isSelected'>[] = [];
     let id = 0;
 
+    if (targetCount === 36) {
+        // Easy mode: Only use a few suits/types for simplicity. 
+        // Need 18 pairs.
+        // Use Seasons (4), Flowers (4) -> 8 tiles.
+        // Use Dragons (3*4) -> 12 tiles.
+        // Use Winds (4*4) -> 16 tiles.
+        // Total 36.
+        SEASONS.forEach(s => deck.push({ id: `tile-${id++}`, type: 'season', value: s }));
+        FLOWERS.forEach(f => deck.push({ id: `tile-${id++}`, type: 'flower', value: f }));
+        DRAGONS.forEach(d => { for (let i = 0; i < 4; i++) deck.push({ id: `tile-${id++}`, type: 'dragon', value: d }) });
+        WINDS.forEach(w => { for (let i = 0; i < 4; i++) deck.push({ id: `tile-${id++}`, type: 'wind', value: w }) });
+        return deck;
+    }
+
+    // Standard/Hard (144)
     // Suits 1-9 (4 each)
     SUITS.forEach(suit => {
         for (let v = 1; v <= 9; v++) {

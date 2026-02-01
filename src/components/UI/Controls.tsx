@@ -10,12 +10,21 @@ interface Props {
 }
 
 export default function Controls({ onOpenSound }: Props) {
-    const { score, shuffle, requestHint, isWon, resetGame } = useGame();
+    const { score, shuffle, requestHint, isWon, resetGame, difficulty, setDifficulty } = useGame();
     const { t, language, setLanguage } = useLanguage();
 
     const toggleLanguage = () => {
         const next: Record<string, 'tr' | 'en' | 'de'> = { tr: 'en', en: 'de', de: 'tr' };
         setLanguage(next[language]);
+    };
+
+    const toggleDifficulty = () => {
+        const next: Record<string, 'easy' | 'standard' | 'hard'> = {
+            easy: 'standard',
+            standard: 'hard',
+            hard: 'easy'
+        };
+        setDifficulty(next[difficulty]);
     };
 
     return (
@@ -34,6 +43,17 @@ export default function Controls({ onOpenSound }: Props) {
                 </button>
                 <button className={styles.actionBtn} onClick={requestHint}>
                     {t.game.hint}
+                </button>
+                <button
+                    className={styles.diffBtn}
+                    onClick={toggleDifficulty}
+                    style={{
+                        background: difficulty === 'easy' ? '#2ecc71' : difficulty === 'hard' ? '#e74c3c' : '#f1c40f',
+                        color: '#fff'
+                    }}
+                    title="Change Difficulty"
+                >
+                    {difficulty.toUpperCase()}
                 </button>
                 <button className={styles.iconBtn} onClick={onOpenSound} aria-label="Sound Settings">
                     🎵

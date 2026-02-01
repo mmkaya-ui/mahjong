@@ -6,6 +6,62 @@ export interface TilePosition {
 
 export const TURTLE_LAYOUT: TilePosition[] = [];
 
+// Easy Layout: 36 tiles. Flat, spread out, very few stacks.
+// Good for kids or seniors. 6x6 grid approx.
+export const EASY_LAYOUT: TilePosition[] = [];
+// 4 Rows of 6 = 24.
+// Layer 1: 4 stacks of 3 = 12.
+// Total 36.
+for (let y = 0; y < 4; y++) {
+    for (let x = 0; x < 6; x++) {
+        EASY_LAYOUT.push({ x: x * 2, y: y * 2, z: 0 });
+    }
+}
+// Add 12 on top (every other)
+for (let x = 0; x < 6; x += 2) {
+    for (let y = 0; y < 4; y += 2) {
+        // Add to center of 2x2.
+        // (x*2 + x*2+2)/2 = 2x+1.
+        // Actually just stack on top of specific ones for simplicity in matching rules?
+        // Stacking directly: z=1.
+        EASY_LAYOUT.push({ x: x * 2, y: y * 2, z: 1 });
+    }
+}
+// Fix count: 24 (base) + 6 (layer 1) = 30? Wait.
+// Base loop 4*6 = 24.
+// Layer 1 loop: x=0,2,4 (3). y=0,2 (2). 3*2=6.
+// Total 30.
+// Need 6 more.
+// Add z=2 on the 6 stacks.
+for (let x = 0; x < 6; x += 2) {
+    for (let y = 0; y < 4; y += 2) {
+        EASY_LAYOUT.push({ x: x * 2, y: y * 2, z: 2 });
+    }
+}
+// Total 36.
+
+// Hard Layout: 144 tiles but dense and tall. "Fortress".
+export const HARD_LAYOUT: TilePosition[] = [];
+// Base: 10x8 = 80.
+for (let x = 0; x < 10; x++) {
+    for (let y = 0; y < 8; y++) {
+        HARD_LAYOUT.push({ x: x * 2, y: y * 2, z: 0 });
+    }
+}
+// Layer 1: 8x6 = 48.
+for (let x = 1; x < 9; x++) {
+    for (let y = 1; y < 7; y++) {
+        HARD_LAYOUT.push({ x: x * 2, y: y * 2, z: 1 });
+    }
+}
+// Layer 2: 4x4 = 16.
+for (let x = 3; x < 7; x++) {
+    for (let y = 2; y < 6; y++) {
+        HARD_LAYOUT.push({ x: x * 2, y: y * 2, z: 2 });
+    }
+}
+// Total: 80+48+16 = 144.
+
 // Layer 0 (Bottom) - The base shape is complex, approximating standard Turtle
 // Row 0: 2 tiles (adj to ear)
 TURTLE_LAYOUT.push({ x: 2, y: 0, z: 0 }); TURTLE_LAYOUT.push({ x: 26, y: 0, z: 0 }); // Top side ears?
