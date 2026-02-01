@@ -8,6 +8,7 @@ import { BoardEngine } from '@/core/game/BoardEngine';
 import { GAME_CONSTANTS } from '@/config/constants';
 
 type Difficulty = 'easy' | 'normal' | 'hard';
+export type GameMode = 'zen' | 'realism' | 'hardcore' | 'maximum';
 
 interface GameContextType {
     tiles: Tile[];
@@ -19,12 +20,14 @@ interface GameContextType {
     selectTile: (tile: Tile) => void;
     resetGame: () => void;
     shuffle: () => void;
+    canShuffle: boolean;
+    shufflesRemaining: number;
     hint: Tile[] | null;
     requestHint: () => void;
     difficulty: Difficulty;
     setDifficulty: (diff: Difficulty) => void;
-    gameMode: 'zen' | 'realism';
-    setGameMode: (mode: 'zen' | 'realism') => void;
+    gameMode: GameMode;
+    setGameMode: (mode: GameMode) => void;
     gameId: number;
 }
 
@@ -37,9 +40,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const [selectedTile, setSelectedTile] = useState<Tile | null>(null);
     const [hint, setHint] = useState<Tile[] | null>(null);
     const [isWon, setIsWon] = useState(false);
+    const [isGameOver, setIsGameOver] = useState(false);
     const [difficulty, setDifficulty] = useState<Difficulty>('normal');
-    const [gameMode, setGameMode] = useState<'zen' | 'realism'>('zen');
+    const [gameMode, setGameMode] = useState<GameMode>('zen');
     const [gameId, setGameId] = useState(0); // For forcing re-renders
+
+    // Hardcore mode specific
+    const [shufflesRemaining, setShufflesRemaining] = useState(GAME_CONSTANTS.FREE_SHUFFLES);
 
     const lastInteractionRef = useRef<number>(Date.now());
     const { playClickSound } = useAudio();
@@ -49,13 +56,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         if (difficulty !== 'easy') return;
         const checkIdle = setInterval(() => {
             const now = Date.now();
-            if (now - lastInteractionRef.current > GAME_CONSTANTS.HINT_IDLE_MS && !hint && !isWon) {
+            if (now - lastInteractionRef.current > GAME_CONSTANTS.HINT_IDLE_MS && !hint && !isWon && !isGameOver) {
                 requestHint();
             }
         }, GAME_CONSTANTS.HINT_CHECK_INTERVAL);
         return () => clearInterval(checkIdle);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [difficulty, hint, isWon, tiles]);
+    }, [difficulty, hint, isWon, isGameOver, tiles]);
 
     const initGame = useCallback(() => {
         let layout = TURTLE_LAYOUT;
@@ -77,8 +84,11 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
         let initialTiles: Tile[] = [];
 
-        if (gameMode === 'realism') {
-            // True Random Shuffle
+        // Zen = Solvable. Others = Random.
+        if (gameMode === 'zen') {
+            initialTiles = generateSolvableBoard(layout, deck);
+        } else {
+            // True Random Shuffle (Realism, Hardcore, Maximum)
             for (let i = deck.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -92,9 +102,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 isClickable: true,
                 isSelected: false
             } as Tile));
-        } else {
-            // Zen Mode: Solvable
-            initialTiles = generateSolvableBoard(layout, deck);
         }
 
         // Optimized Engine Update
@@ -107,6 +114,8 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setSelectedTile(null);
         setHint(null);
         setIsWon(false);
+        setIsGameOver(false);
+        setShufflesRemaining(GAME_CONSTANTS.FREE_SHUFFLES);
         setGameId(prev => prev + 1);
         lastInteractionRef.current = Date.now();
     }, [difficulty, gameMode]);
@@ -115,8 +124,44 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         initGame();
     }, [initGame]);
 
+    // Check for moves availability
+    const checkMoves = (currentTiles: Tile[]) => {
+        const openTiles = currentTiles.filter(t => t.isClickable);
+        let hasMove = false;
+        for (let i = 0; i < openTiles.length; i++) {
+            for (let j = i + 1; j < openTiles.length; j++) {
+                if (canMatch(openTiles[i], openTiles[j])) {
+                    hasMove = true;
+                    break;
+                }
+            }
+            if (hasMove) break;
+        }
+
+        if (!hasMove) {
+            console.log("No moves available!");
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('mahjong-no-moves'));
+            }
+
+            // Strict Mode Logic
+            if (gameMode === 'maximum') {
+                // Instant Loss
+                setIsGameOver(true);
+            } else if (gameMode === 'hardcore') {
+                // Check if shuffle is possible
+                const canPay = score >= GAME_CONSTANTS.SHUFFLE_PENALTY;
+                const hasFree = shufflesRemaining > 0;
+                if (!hasFree && !canPay) {
+                    // Can't afford shuffle -> Loss
+                    setIsGameOver(true);
+                }
+            }
+        }
+    };
+
     const selectTile = (tile: Tile) => {
-        if (!tile.isClickable) return;
+        if (!tile.isClickable || isGameOver || isWon) return;
 
         lastInteractionRef.current = Date.now();
         playClickSound();
@@ -149,32 +194,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 if (updated.length === 0) {
                     setIsWon(true);
                 } else {
-                    // Check for deadlocks
-                    const openTiles = updated.filter(t => t.isClickable);
-                    let hasMove = false;
-                    for (let i = 0; i < openTiles.length; i++) {
-                        for (let j = i + 1; j < openTiles.length; j++) {
-                            if (canMatch(openTiles[i], openTiles[j])) {
-                                hasMove = true;
-                                break;
-                            }
-                        }
-                        if (hasMove) break;
-                    }
-
-                    if (!hasMove) {
-                        // We can alert or toast here. For now, let's use a subtle visual cue or just console.
-                        // Better: Auto-show toast if we had a toast system.
-                        // Re-using 'hint' logic? No.
-                        // Let's set a state or dispatch an event? 
-                        // Simplest: Just use the Shuffle button animation or text?
-                        // "No Moves!"
-                        console.log("No moves available!");
-                        // dispatchEvent for UI?
-                        if (typeof window !== 'undefined') {
-                            window.dispatchEvent(new CustomEvent('mahjong-no-moves'));
-                        }
-                    }
+                    checkMoves(updated);
                 }
             } else {
                 // No match
@@ -192,6 +212,24 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     };
 
     const shuffle = () => {
+        if (isGameOver || isWon) return;
+
+        // Mode Rules
+        if (gameMode === 'maximum') return; // Should be disabled in UI
+
+        if (gameMode === 'hardcore') {
+            if (shufflesRemaining > 0) {
+                setShufflesRemaining(p => p - 1);
+            } else {
+                if (score >= GAME_CONSTANTS.SHUFFLE_PENALTY) {
+                    setScore(s => s - GAME_CONSTANTS.SHUFFLE_PENALTY);
+                } else {
+                    // Fail safe: Can't shuffle
+                    return;
+                }
+            }
+        }
+
         lastInteractionRef.current = Date.now();
         const shuffled = shuffleTiles(tiles);
 
@@ -201,9 +239,13 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setTiles(updated);
         setSelectedTile(null);
         setHint(null);
+
+        // Re-check moves after shuffle (should vary rarely happen that shuffle is also stuck)
+        checkMoves(updated);
     };
 
     const requestHint = () => {
+        if (isGameOver || isWon) return;
         const openTiles = tiles.filter(t => t.isClickable);
         for (let i = 0; i < openTiles.length; i++) {
             for (let j = i + 1; j < openTiles.length; j++) {
@@ -215,18 +257,30 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    // Check if player can shuffle
+    const canShuffle = useMemo(() => {
+        if (gameMode === 'zen' || gameMode === 'realism') return true;
+        if (gameMode === 'maximum') return false;
+        if (gameMode === 'hardcore') {
+            return shufflesRemaining > 0 || score >= GAME_CONSTANTS.SHUFFLE_PENALTY;
+        }
+        return true;
+    }, [gameMode, shufflesRemaining, score]);
+
     return (
         <GameContext.Provider
             value={{
                 tiles,
                 score,
                 matches,
-                isGameOver: false,
+                isGameOver,
                 isWon,
                 selectedTile,
                 selectTile,
                 resetGame: initGame,
                 shuffle,
+                canShuffle,
+                shufflesRemaining,
                 hint,
                 requestHint,
                 difficulty,

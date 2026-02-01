@@ -10,6 +10,7 @@ export const en: Translations = {
         gameOver: 'Game Over',
         score: 'Score',
         noMoves: 'No moves available! Try Shuffle.',
+        tryAgain: 'Try Again',
     },
     settings: {
         title: 'Settings',
@@ -47,6 +48,8 @@ export const en: Translations = {
     modes: {
         zen: 'ZEN',
         realism: 'REAL',
+        hardcore: 'HARDCORE',
+        maximum: 'MAXIMUM',
     },
     help: {
         title: 'How to Play',

@@ -10,6 +10,7 @@ export const de: Translations = {
         gameOver: 'Spiel Vorbei',
         score: 'Punktzahl',
         noMoves: 'Keine Züge mehr! Versuche zu mischen.',
+        tryAgain: 'Noch einmal',
     },
     settings: {
         title: 'Einstellungen',
@@ -47,6 +48,8 @@ export const de: Translations = {
     modes: {
         zen: 'ZEN',
         realism: 'ECHT',
+        hardcore: 'HARDCORE',
+        maximum: 'MAXIMUM',
     },
     help: {
         title: 'Spielanleitung',

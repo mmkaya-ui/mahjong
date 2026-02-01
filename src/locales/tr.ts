@@ -10,6 +10,7 @@ export const tr: Translations = {
         gameOver: 'Oyun Bitti',
         score: 'Puan',
         noMoves: 'Hamle kalmadı! Karıştırmayı dene.',
+        tryAgain: 'Tekrar Dene',
     },
     settings: {
         title: 'Ayarlar',
@@ -47,6 +48,8 @@ export const tr: Translations = {
     modes: {
         zen: 'ZEN',
         realism: 'GERÇEK',
+        hardcore: 'ZORLU',
+        maximum: 'MAKSİMUM',
     },
     help: {
         title: 'Nasıl Oynanır',

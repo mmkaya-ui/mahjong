@@ -13,7 +13,20 @@ interface Props {
 }
 
 export default function Controls({ onOpenSound }: Props) {
-    const { score, shuffle, requestHint, isWon, resetGame, difficulty, setDifficulty, gameMode, setGameMode } = useGame();
+    const {
+        score,
+        shuffle,
+        requestHint,
+        isWon,
+        isGameOver,
+        resetGame,
+        difficulty,
+        setDifficulty,
+        gameMode,
+        setGameMode,
+        canShuffle,
+        shufflesRemaining
+    } = useGame();
     const { t, language, setLanguage } = useLanguage();
     const [isHelpOpen, setIsHelpOpen] = useState(false);
 
@@ -31,9 +44,51 @@ export default function Controls({ onOpenSound }: Props) {
         setDifficulty(next[difficulty]);
     };
 
+    const toggleMode = () => {
+        // Cycle: Zen -> Realism -> Hardcore -> Maximum
+        const next: Record<string, 'zen' | 'realism' | 'hardcore' | 'maximum'> = {
+            zen: 'realism',
+            realism: 'hardcore',
+            hardcore: 'maximum',
+            maximum: 'zen'
+        };
+        // @ts-ignore - dynamic key safety
+        setGameMode(next[gameMode] || 'zen');
+    };
+
+    const getModeLabel = () => {
+        switch (gameMode) {
+            case 'zen': return `☯️ ${t.modes.zen}`;
+            case 'realism': return `🎲 ${t.modes.realism}`;
+            case 'hardcore': return `🔥 ${t.modes.hardcore}`;
+            case 'maximum': return `💀 ${t.modes.maximum}`;
+        }
+    };
+
+    const getModeColor = () => {
+        switch (gameMode) {
+            case 'zen': return '#1abc9c';     // Green
+            case 'realism': return '#8e44ad'; // Purple
+            case 'hardcore': return '#e74c3c';// Red
+            case 'maximum': return '#2c3e50'; // Dark Blue/Black
+        }
+    };
+
     return (
         <>
             {isWon && <Celebration />}
+            {isGameOver && (
+                <div style={{
+                    position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.7)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 50
+                }}>
+                    <h1 style={{ color: 'white', fontSize: '3rem', marginBottom: '20px' }}>{t.game.gameOver}</h1>
+                    <button className={styles.resetBtn} onClick={resetGame} style={{ position: 'static', transform: 'none' }}>
+                        {t.game.tryAgain}
+                    </button>
+                </div>
+            )}
+
             <div className={styles.controlsBar}>
                 <div className={styles.stats}>
                     <div className={styles.scoreBlock}>
@@ -46,9 +101,20 @@ export default function Controls({ onOpenSound }: Props) {
                 <div className={styles.controlsContainer}>
                     {/* Row 1: Game Actions */}
                     <div className={styles.actionsRow}>
-                        <button className={styles.actionBtn} onClick={shuffle} aria-label={t.game.shuffle}>
+                        <button
+                            className={styles.actionBtn}
+                            onClick={shuffle}
+                            disabled={!canShuffle}
+                            style={{ opacity: canShuffle ? 1 : 0.5, cursor: canShuffle ? 'pointer' : 'not-allowed' }}
+                            aria-label={t.game.shuffle}
+                        >
                             <Shuffle size={18} />
                             <span>{t.game.shuffle}</span>
+                            {gameMode === 'hardcore' && (
+                                <span style={{ fontSize: '0.7em', marginLeft: '5px', background: 'rgba(0,0,0,0.1)', padding: '2px 4px', borderRadius: '4px' }}>
+                                    {shufflesRemaining > 0 ? shufflesRemaining : '-50'}
+                                </span>
+                            )}
                         </button>
                         <button className={styles.actionBtn} onClick={requestHint} aria-label={t.game.hint}>
                             <Lightbulb size={18} />
@@ -72,14 +138,14 @@ export default function Controls({ onOpenSound }: Props) {
                     <div className={styles.settingsRow}>
                         <button
                             className={styles.modeBtn}
-                            onClick={() => setGameMode(gameMode === 'zen' ? 'realism' : 'zen')}
+                            onClick={toggleMode}
                             style={{
-                                background: gameMode === 'zen' ? '#1abc9c' : '#8e44ad',
+                                background: getModeColor(),
                                 color: '#fff'
                             }}
                             title="Change Game Mode"
                         >
-                            <span>{gameMode === 'zen' ? `☯️ ${t.modes.zen}` : `🎲 ${t.modes.realism}`}</span>
+                            <span>{getModeLabel()}</span>
                         </button>
 
                         <div className={styles.iconGroup}>

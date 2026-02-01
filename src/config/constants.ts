@@ -18,6 +18,8 @@ export const GAME_CONSTANTS = {
     SCORE_MATCH: 10,
     HINT_IDLE_MS: 15000,
     HINT_CHECK_INTERVAL: 2000,
+    SHUFFLE_PENALTY: 50,
+    FREE_SHUFFLES: 3,
     TILE_WIDTH: 74, // Approximate visual width
     TILE_HEIGHT: 102
 } as const;
