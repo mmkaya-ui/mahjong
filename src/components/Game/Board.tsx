@@ -1,32 +1,38 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
-import { useGame } from '@/context/GameContext';
-import Tile from './Tile';
-import styles from './Board.module.css';
+import { TURTLE_LAYOUT, EASY_LAYOUT, HARD_LAYOUT } from '@/utils/layouts';
 
 export default function Board() {
-    const { tiles, selectTile, hint } = useGame();
+    const { tiles, selectTile, hint, difficulty } = useGame();
     const boardRef = useRef<HTMLDivElement>(null);
     const [viewState, setViewState] = useState({ scale: 1, shiftX: 0, shiftY: 0 });
 
-    // Auto-scale to fit screen
+    // Auto-scale to fit screen - LOCKED to Layout Guidelines
     useEffect(() => {
         const handleResize = () => {
-            if (!boardRef.current || tiles.length === 0) return;
+            if (!boardRef.current) return;
             const parent = boardRef.current.parentElement;
             if (!parent) return;
 
-            // Calculate dynamic bounding box
+            // Determine reference layout based on Difficulty
+            // We use the full initial layout to define the "Stage"
+            let targetLayout = TURTLE_LAYOUT;
+            if (difficulty === 'easy') targetLayout = EASY_LAYOUT;
+            if (difficulty === 'hard') targetLayout = HARD_LAYOUT;
+
+            // Calculate static bounding box from the Layout definition
             let minX = Infinity, maxX = -Infinity;
             let minY = Infinity, maxY = -Infinity;
 
-            tiles.forEach(t => {
+            targetLayout.forEach(t => {
                 if (t.x < minX) minX = t.x;
                 if (t.x > maxX) maxX = t.x;
                 if (t.y < minY) minY = t.y;
                 if (t.y > maxY) maxY = t.y;
             });
+
+            // If layout is somehow empty (shouldn't happen), fallback defaults
+            if (minX === Infinity) { minX = 0; maxX = 28; minY = 0; maxY = 16; }
 
             // Grid units to Pixels (approx)
             // 26px horiz step, 32px vert step.
@@ -67,7 +73,7 @@ export default function Board() {
         handleResize(); // Initial
 
         return () => window.removeEventListener('resize', handleResize);
-    }, [tiles.length, tiles]); // Dep on tiles to rescale if layout changes
+    }, [difficulty]); // Only re-calc if difficulty (layout) changes, NOT tiles.length
 
     return (
         <div className={styles.boardContainer}>

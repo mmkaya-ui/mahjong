@@ -88,26 +88,54 @@ export function canMatch(t1: Tile, t2: Tile): boolean {
 }
 
 export function shuffleTiles(currentTiles: Tile[]): Tile[] {
-    // Keep the same positions, but shuffle the content (identity) of the remaining tiles.
-    // Get active tiles
+    // Smart Shuffle:
+    // 1. Collect all tile identities (type/value)
+    // 2. Reposition all tiles into a flat grid (z=0) to ensure solvability and avoid stacks.
+    // 3. Shuffle identities.
+
+    const count = currentTiles.length;
+    if (count === 0) return [];
+
+    // Calculate Grid Dimensions
+    // approximate square
+    const cols = Math.ceil(Math.sqrt(count));
+    const rows = Math.ceil(count / cols);
+
+    // Center offset (approx based on Turtle center ~14,8)
+    // Grid unit 2x2.
+    // Start X = 14 - (cols * 2) / 2 = 14 - cols
+    // Start Y = 8 - (rows * 2) / 2 = 8 - rows
+    const startX = 14 - cols;
+    const startY = 8 - rows;
+
+    const newPositions: TilePosition[] = [];
+    for (let i = 0; i < count; i++) {
+        const r = Math.floor(i / cols);
+        const c = i % cols;
+        newPositions.push({
+            x: (startX + c * 2),
+            y: (startY + r * 2),
+            z: 0
+        });
+    }
+
+    // Shuffle Identities
     const deck = currentTiles.map(t => ({ id: t.id, type: t.type, value: t.value }));
-    // Shuffle deck
     for (let i = deck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [deck[i], deck[j]] = [deck[j], deck[i]];
     }
 
-    // Reassign to current positions
-    // Note: positions input might be all original positions, but we only have `currentTiles` remaining.
-    // We should preserve the (x,y,z) of current tiles but swap the (type, value).
-
-    return currentTiles.map((t, i) => ({
-        ...t,
-        id: deck[i].id, // Swap identity
+    // Merge
+    return newPositions.map((pos, i) => ({
+        ...pos,
+        id: deck[i].id,
         type: deck[i].type,
         value: deck[i].value,
+        isVisible: true,
+        isClickable: true, // Flat grid always clickable
         isSelected: false
-    }));
+    } as Tile));
 }
 
 export function generateSolvableBoard(layout: TilePosition[], deck: Omit<Tile, 'x' | 'y' | 'z' | 'isVisible' | 'isClickable' | 'isSelected'>[]): Tile[] {
