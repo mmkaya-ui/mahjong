@@ -53,7 +53,7 @@ export const de: Translations = {
         goal: 'Ziel',
         goalDesc: 'Kombiniere alle Paare, um das Brett zu leeren.',
         rules: 'Regeln',
-        rulesDesc: 'Ein Stein ist frei, wenn kein Stein darüber liegt UND eine Seite (links oder rechts) frei ist.',
+        rulesDesc: 'Ein Stein ist frei, wenn kein Stein darüber liegt UND eine Seite (links oder rechts) frei ist. HINWEIS: Blumen und Jahreszeiten passen zueinander.',
         modes: 'Spielmodi',
         modesDesc: 'ZEN: Lösbar (Strategie). ECHT: Zufall (Glück).',
         controls: 'Steuerung',

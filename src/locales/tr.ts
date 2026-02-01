@@ -53,7 +53,7 @@ export const tr: Translations = {
         goal: 'Amaç',
         goalDesc: 'Tahtayı temizlemek için tüm çiftleri eşleştirin.',
         rules: 'Kurallar',
-        rulesDesc: 'Bir taş seçilebilmesi için: Üzerinde taş olmamalı VE sağında veya solunda boşluk olmalıdır.',
+        rulesDesc: 'Bir taş seçilebilmesi için: Üzerinde taş olmamalı VE sağında veya solunda boşluk olmalıdır. NOT: Çiçekler ve Mevsimler birbiriyle eşleşir.',
         modes: 'Oyun Modları',
         modesDesc: 'ZEN: Çözülebilir (Strateji). GERÇEK: Tamamen rastgele (Şans).',
         controls: 'Kontroller',

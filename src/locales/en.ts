@@ -53,7 +53,7 @@ export const en: Translations = {
         goal: 'Goal',
         goalDesc: 'Match all pairs to clear the board.',
         rules: 'Rules',
-        rulesDesc: 'A tile can only be picked if it has no tile on top AND has a free space on either its left or right side.',
+        rulesDesc: 'A tile can only be picked if it has no tile on top AND has a free space on either its left or right side. NOTE: Flowers and Seasons match any of their kind.',
         modes: 'Game Modes',
         modesDesc: 'ZEN: Guaranteed solvable (Strategy). REAL: True randomness (Luck).',
         controls: 'Controls',
