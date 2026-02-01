@@ -32,18 +32,38 @@
   background: #fdf6e3;
   /* Cream/Bone color */
   border-radius: 8px;
+  /* Enhanced 3D effect */
   box-shadow:
-    inset 0 0 5px rgba(0, 0, 0, 0.1),
-    1px 1px 0px #d0c8b0,
-    2px 2px 0px #b0a890,
-    3px 3px 0px #908870,
-    4px 4px 5px rgba(0, 0, 0, 0.2);
+    inset 0 0 5px rgba(0, 0, 0, 0.05),
+    1px 1px 0px #c5bb9c,
+    2px 2px 0px #b0a585,
+    3px 3px 0px #9a8f70,
+    4px 4px 0px #857a5c,
+    5px 5px 6px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 32px;
   user-select: none;
-  border: 1px solid #e0d8c0;
+  border: 1px solid #d4ccb0;
+  border-bottom: 1px solid #b0a585;
+  /* Thicker look bottom */
+  border-right: 1px solid #b0a585;
+  /* Thicker look right */
+  position: relative;
+  z-index: 2;
+}
+
+.tileSide {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #b0a585 0%, #857a5c 100%);
+  border-radius: 8px;
+  z-index: 1;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .selected .tileFace {

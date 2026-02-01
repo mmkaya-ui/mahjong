@@ -103,7 +103,7 @@ const Tile = React.memo(({ tile, onClick, isHinted }: TileProps) => {
             }}
             onClick={handleClick}
         >
-            <div className={styles.tileMove} style={{ transform: `translateY(${-tile.z * 5}px)` }}>
+            <div className={styles.tileMove} style={{ transform: `translateY(${-tile.z * 7}px)` }}>
                 <div className={styles.tileFace} style={{ color: getTileColor(tile) }}>
                     {/* Render simplified SVG or Char */}
                     <span className={styles.symbol}>{getTileContent(tile)}</span>
