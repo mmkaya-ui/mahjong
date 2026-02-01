@@ -95,7 +95,7 @@ export default function Board() {
                 className={styles.boardContent}
                 style={{ transform: `scale(${viewState.scale}) translate(${viewState.shiftX}px, ${viewState.shiftY}px)` }}
             >
-                {tiles
+                {[...tiles]
                     .sort((a, b) => {
                         if (a.z !== b.z) return a.z - b.z;
                         if (a.y !== b.y) return a.y - b.y;

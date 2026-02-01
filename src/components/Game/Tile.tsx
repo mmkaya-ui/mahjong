@@ -121,7 +121,8 @@ const Tile = React.memo(({ tile, onClick, isHinted }: TileProps) => {
         prev.tile.isVisible === next.tile.isVisible &&
         prev.tile.x === next.tile.x && // Should not change usually
         prev.tile.y === next.tile.y &&
-        prev.tile.z === next.tile.z;
+        prev.tile.z === next.tile.z &&
+        prev.onClick === next.onClick; // Critical: Check handler to avoid stale closures
 });
 
 export default Tile;
