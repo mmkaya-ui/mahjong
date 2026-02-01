@@ -8,24 +8,44 @@ import styles from './Board.module.css';
 export default function Board() {
     const { tiles, selectTile, hint } = useGame();
     const boardRef = useRef<HTMLDivElement>(null);
-    const [scale, setScale] = useState(1);
+    const [viewState, setViewState] = useState({ scale: 1, shiftX: 0, shiftY: 0 });
 
     // Auto-scale to fit screen
     useEffect(() => {
         const handleResize = () => {
-            if (!boardRef.current) return;
+            if (!boardRef.current || tiles.length === 0) return;
             const parent = boardRef.current.parentElement;
             if (!parent) return;
 
-            // Turtle layout dim approx: 30x18 grid units (approx 1440x? px at full size?)
-            // Tile size: 48x64.
-            // Max Width: approx 30 cols * 24px (half-width step) + 48 = ~768px?
-            // Max Height: approx 18 rows * 32px (half-height step) + 64 = ~640px?
+            // Calculate dynamic bounding box
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
 
-            // Let's assume logical width ~800px, height ~600px
-            // Tighter bounds for better mobile fill
-            const contentWidth = 740; // Reduced from 800 to fit wider turtle
-            const contentHeight = 600;
+            tiles.forEach(t => {
+                if (t.x < minX) minX = t.x;
+                if (t.x > maxX) maxX = t.x;
+                if (t.y < minY) minY = t.y;
+                if (t.y > maxY) maxY = t.y;
+            });
+
+            // Grid units to Pixels (approx)
+            // 26px horiz step, 32px vert step.
+            // Add padding (40px)
+            const widthPixels = ((maxX - minX) * 26) + 48 + 40;
+            const heightPixels = ((maxY - minY) * 32) + 64 + 40;
+
+            // Calculate content center relative to Tile.tsx hardcoded origin (14, 8)
+            const currentCenterX = (minX + maxX) / 2;
+            const currentCenterY = (minY + maxY) / 2;
+
+            // Tile.tsx assumes center is 14, 8. 
+            // We need to shift opposite to the specific tiles' offset from that 14,8 center.
+            const shiftX = -(currentCenterX - 14) * 26;
+            const shiftY = -(currentCenterY - 8) * 32;
+
+            // Ensure minimum reasonable bounds
+            const contentWidth = Math.max(300, widthPixels);
+            const contentHeight = Math.max(300, heightPixels);
 
             const availWidth = parent.clientWidth;
             const availHeight = parent.clientHeight;
@@ -33,33 +53,31 @@ export default function Board() {
             const scaleX = availWidth / contentWidth;
             const scaleY = availHeight / contentHeight;
 
-            // Use 95% of available space instead of 90%
-            const newScale = Math.min(scaleX, scaleY) * 0.95;
+            // Use 96% of available space
+            const newScale = Math.min(scaleX, scaleY) * 0.96;
 
-            // Allow slightly smaller min scale if absolutely needed, but generally try to keep it readable
-            setScale(Math.max(0.35, Math.min(newScale, 1.3)));
+            setViewState({
+                scale: Math.max(0.35, Math.min(newScale, 1.8)),
+                shiftX,
+                shiftY
+            });
         };
 
         window.addEventListener('resize', handleResize);
         handleResize(); // Initial
 
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    }, [tiles.length, tiles]); // Dep on tiles to rescale if layout changes
 
     return (
         <div className={styles.boardContainer}>
             <div
                 ref={boardRef}
                 className={styles.boardContent}
-                style={{ transform: `scale(${scale})` }}
+                style={{ transform: `scale(${viewState.scale}) translate(${viewState.shiftX}px, ${viewState.shiftY}px)` }}
             >
                 {tiles
                     .sort((a, b) => {
-                        // Render order: Z first, then Y, then X?
-                        // Actually, HTML/CSS painting order:
-                        // Lower Z first.
-                        // Within same Z: Lower Y first (top to bottom) to ensure overlapping looks right if any?
-                        // Actually for 3D stacks, we want strict Z order.
                         if (a.z !== b.z) return a.z - b.z;
                         if (a.y !== b.y) return a.y - b.y;
                         return a.x - b.x;

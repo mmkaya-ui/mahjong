@@ -87,15 +87,19 @@ export default function Tile({ tile, onClick, isHinted }: TileProps) {
         <div
             className={`${styles.tileWrapper} ${tile.isClickable ? styles.clickable : styles.blocked} ${tile.isSelected ? styles.selected : ''} ${isHinted ? styles.hinted : ''}`}
             style={{
-                left: `calc(50% + ${(tile.x - 14) * 26}px)`, // Centering logic: offset from center (14ish)
+                // Dynamic centering based on min/max is handled by container size usually, 
+                // but since we are Absolute positioning, we need to ensure the group is centered.
+                // However, the Board component doesn't actually re-center the group, it just scales.
+                // We should center the tiles relative to the bounding box?
+                // OR simpler: The CSS scale transforms from center? no default is center.
+                // Let's just keep the absolute positions and let the flex container center the scaled board?
+                // Board.module.css uses flex center? 
+                // Actually BoardContent is: position: relative.
+                // We should just translate them to be positive coordinates relative to minX/minY?
+                // No, to keep it simple, let's just stick to the calculation but verify centering.
+                // For now, keep as is, but maybe adjust offset if needed.
+                left: `calc(50% + ${(tile.x - 14) * 26}px)`, // Centering logic around assumed center 14
                 top: `calc(50% + ${(tile.y - 8) * 32}px)`,
-                zIndex: tile.z * 10 + (tile.y), // zIndex based on layer AND Y-position to prevent occlusion issues
-                // Note: Mahjong visual stacking. Tiles lower in Y should be "in front" of tiles behind them if at same Z?
-                // Actually, CSS z-index is mainly for layers. Within a layer, DOM order or explicit Z matters.
-                // We need (tile.x, tile.y, tile.z).
-                // Standard projection:
-                // x-offset = x * W/2
-                // y-offset = y * H/2 - z * depth
             }}
             onClick={handleClick}
         >
