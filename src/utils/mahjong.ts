@@ -88,35 +88,50 @@ export function canMatch(t1: Tile, t2: Tile): boolean {
 }
 
 export function shuffleTiles(currentTiles: Tile[]): Tile[] {
-    // Smart Shuffle:
-    // 1. Collect all tile identities (type/value)
-    // 2. Reposition all tiles into a flat grid (z=0) to ensure solvability and avoid stacks.
-    // 3. Shuffle identities.
+    // Smart Shuffle v2:
+    // 1. Maintain the "footprint" of the original layout (Turtle ~28x16) to prevent camera jumps.
+    // 2. Prevent deep stacks (max z=1 or 2) to avoid deadlocks.
+    // 3. Ensure tiles are centered.
 
     const count = currentTiles.length;
     if (count === 0) return [];
 
-    // Calculate Grid Dimensions
-    // approximate square
-    const cols = Math.ceil(Math.sqrt(count));
-    const rows = Math.ceil(count / cols);
+    // Target footprint: Width ~24-28 (12-14 cols), Height ~16 (8 rows)
+    const MAX_COLS = 12; // 24 units wide
+    const MAX_ROWS = 8;  // 16 units high
+    // Capacity per layer = 12 * 8 = 96.
+    // With 144 tiles, we need z=0 and z=1 (partial).
 
-    // Center offset (approx based on Turtle center ~14,8)
-    // Grid unit 2x2.
-    // Start X = 14 - (cols * 2) / 2 = 14 - cols
-    // Start Y = 8 - (rows * 2) / 2 = 8 - rows
-    const startX = 14 - cols;
-    const startY = 8 - rows;
+    // Center calculation (Turtle center is 14, 8)
+    // Our block width 24. StartX = 14 - 12 = 2.
+    // Our block height 16. StartY = 8 - 8 = 0.
+    const startX = 2;
+    const startY = 0;
 
     const newPositions: TilePosition[] = [];
-    for (let i = 0; i < count; i++) {
-        const r = Math.floor(i / cols);
-        const c = i % cols;
-        newPositions.push({
-            x: (startX + c * 2),
-            y: (startY + r * 2),
-            z: 0
-        });
+    let layer = 0;
+    let index = 0;
+
+    // Fill layers
+    while (index < count) {
+        for (let r = 0; r < MAX_ROWS && index < count; r++) {
+            for (let c = 0; c < MAX_COLS && index < count; c++) {
+                // Skew/Pattern to avoid "perfect alignment" blocking? 
+                // Using step=2 is standard.
+                // To minimize blocking, we can try step "checkerboard"? 
+                // No, just fill straightforwardly. z=1 layer will be "on top" and easily removable.
+                // z=0 layer edges will be removable.
+                // It's a dense block, but shallow.
+
+                newPositions.push({
+                    x: startX + (c * 2),
+                    y: startY + (r * 2),
+                    z: layer
+                });
+                index++;
+            }
+        }
+        layer++;
     }
 
     // Shuffle Identities
@@ -133,7 +148,8 @@ export function shuffleTiles(currentTiles: Tile[]): Tile[] {
         type: deck[i].type,
         value: deck[i].value,
         isVisible: true,
-        isClickable: true, // Flat grid always clickable
+        // Clickable will be recalculated by BoardEngine, but set true for initial state safe
+        isClickable: true,
         isSelected: false
     } as Tile));
 }
