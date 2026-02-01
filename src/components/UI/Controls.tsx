@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function Controls({ onOpenSound }: Props) {
-    const { score, shuffle, requestHint, isWon, resetGame, difficulty, setDifficulty } = useGame();
+    const { score, shuffle, requestHint, isWon, resetGame, difficulty, setDifficulty, gameMode, setGameMode } = useGame();
     const { t, language, setLanguage } = useLanguage();
 
     const toggleLanguage = () => {
@@ -58,6 +58,17 @@ export default function Controls({ onOpenSound }: Props) {
                 >
                     <Signal size={16} />
                     <span>{difficulty.toUpperCase()}</span>
+                </button>
+                <button
+                    className={styles.diffBtn}
+                    onClick={() => setGameMode(gameMode === 'zen' ? 'realism' : 'zen')}
+                    style={{
+                        background: gameMode === 'zen' ? '#1abc9c' : '#8e44ad',
+                        color: '#fff'
+                    }}
+                    title="Change Game Mode"
+                >
+                    <span>{gameMode === 'zen' ? '☯️ ZEN' : '🎲 REAL'}</span>
                 </button>
                 <button className={styles.iconBtn} onClick={onOpenSound} aria-label="Sound Settings">
                     <Volume2 size={20} />

@@ -21,6 +21,8 @@ interface GameContextType {
     requestHint: () => void;
     difficulty: Difficulty;
     setDifficulty: (diff: Difficulty) => void;
+    gameMode: 'zen' | 'realism';
+    setGameMode: (mode: 'zen' | 'realism') => void;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -33,6 +35,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     const [hint, setHint] = useState<Tile[] | null>(null);
     const [isWon, setIsWon] = useState(false);
     const [difficulty, setDifficulty] = useState<Difficulty>('standard');
+    const [gameMode, setGameMode] = useState<'zen' | 'realism'>('zen');
 
     const lastInteractionRef = useRef<number>(Date.now());
     const { playClickSound } = useAudio();
@@ -40,17 +43,15 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     // Auto-hint logic for Easy mode
     useEffect(() => {
         if (difficulty !== 'easy') return;
-
         const checkIdle = setInterval(() => {
             const now = Date.now();
             if (now - lastInteractionRef.current > 10000 && !hint && !isWon) {
                 requestHint();
             }
         }, 2000);
-
         return () => clearInterval(checkIdle);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [difficulty, hint, isWon, tiles]); // visual deps
+    }, [difficulty, hint, isWon, tiles]);
 
     const initGame = useCallback(() => {
         let layout = TURTLE_LAYOUT;
@@ -70,11 +71,29 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         if (deck.length > layout.length) {
             deck = deck.slice(0, layout.length);
         }
-        // If deck < layout, we have a problem (impossible to fill). 
-        // Our layouts should match deck sizes (36, 144).
 
-        // Use Solvable Board Generator
-        const initialTiles = generateSolvableBoard(layout, deck);
+        let initialTiles: Tile[] = [];
+
+        if (gameMode === 'realism') {
+            // True Random Shuffle
+            // Shuffle deck first
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+            initialTiles = layout.map((pos, i) => ({
+                ...pos,
+                id: deck[i].id,
+                type: deck[i].type,
+                value: deck[i].value,
+                isVisible: true,
+                isClickable: true, // calc below
+                isSelected: false
+            } as Tile));
+        } else {
+            // Zen Mode: Solvable Generator
+            initialTiles = generateSolvableBoard(layout, deck);
+        }
 
         // Final update of state properties
         const readyTiles = initialTiles.map(t => ({
@@ -91,7 +110,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
         setHint(null);
         setIsWon(false);
         lastInteractionRef.current = Date.now();
-    }, [difficulty]);
+    }, [difficulty, gameMode]);
 
     useEffect(() => {
         initGame();
@@ -193,7 +212,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 hint,
                 requestHint,
                 difficulty,
-                setDifficulty
+                setDifficulty,
+                gameMode,
+                setGameMode
             }}
         >
             {children}

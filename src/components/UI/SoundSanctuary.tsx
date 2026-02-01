@@ -10,8 +10,18 @@ interface Props {
 }
 
 export default function SoundSanctuary({ onClose }: Props) {
-    const { frequency, setFrequency, isNatureOn, toggleNature, volume, setVolume, isPlaying, togglePlay } = useAudio();
+    const { frequency, setFrequency, layers, toggleLayer, volume, setVolume, isPlaying, togglePlay } = useAudio();
     const { t } = useLanguage();
+
+    const frequencies = [
+        { id: 'off', label: 'OFF', desc: 'Silence' },
+        { id: '396', label: '396 Hz', desc: 'Liberation of Fear' },
+        { id: '432', label: '432 Hz', desc: 'Peace & Nature' },
+        { id: '528', label: '528 Hz', desc: 'Repair & Love' },
+        { id: '639', label: '639 Hz', desc: 'Connection' },
+        { id: '741', label: '741 Hz', desc: 'Awakening Intuition' },
+        { id: '852', label: '852 Hz', desc: 'Spiritual Order' },
+    ] as const;
 
     return (
         <div className={styles.overlay} onClick={onClose}>
@@ -22,63 +32,64 @@ export default function SoundSanctuary({ onClose }: Props) {
                 </div>
 
                 <div className={styles.scrollContent}>
+
+                    {/* Playback Control (Master) */}
                     <div className={styles.section}>
-                        <h3>{t.sounds.healing} (Base)</h3>
-                        <div className={styles.options}>
+                        <button
+                            className={`${styles.playBtn} ${isPlaying ? styles.playing : ''}`}
+                            onClick={togglePlay}
+                        >
+                            {isPlaying ? '⏸ PAUSE AUDIO' : '▶ START AUDIO'}
+                        </button>
+                    </div>
+
+                    <div className={styles.section}>
+                        <h3>Healing Frequencies</h3>
+                        <div className={styles.gridOptions}>
+                            {frequencies.map((f) => (
+                                <button
+                                    key={f.id}
+                                    className={`${styles.gridBtn} ${frequency === f.id ? styles.active : ''}`}
+                                    onClick={() => setFrequency(f.id as any)}
+                                >
+                                    <strong>{f.label}</strong>
+                                    <span>{f.desc}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className={styles.section}>
+                        <h3>Nature Mixer 🌿</h3>
+                        <div className={styles.mixerStack}>
                             <button
-                                className={`${styles.optionBtn} ${frequency === '528' ? styles.active : ''}`}
-                                onClick={() => setFrequency('528')}
+                                className={`${styles.mixerBtn} ${layers.rain ? styles.activeLayer : ''}`}
+                                onClick={() => toggleLayer('rain')}
                             >
-                                528 Hz (Love & Repair)
+                                🌧️ Rain
                             </button>
                             <button
-                                className={`${styles.optionBtn} ${frequency === '432' ? styles.active : ''}`}
-                                onClick={() => setFrequency('432')}
+                                className={`${styles.mixerBtn} ${layers.birds ? styles.activeLayer : ''}`}
+                                onClick={() => toggleLayer('birds')}
                             >
-                                432 Hz (Peace & Nature)
+                                🐦 Birds (Chirping)
                             </button>
                             <button
-                                className={`${styles.optionBtn} ${frequency === 'off' ? styles.active : ''}`}
-                                onClick={() => setFrequency('off')}
+                                className={`${styles.mixerBtn} ${layers.waves ? styles.activeLayer : ''}`}
+                                onClick={() => toggleLayer('waves')}
                             >
-                                {t.sounds.off}
+                                🌊 Ocean Waves
                             </button>
                         </div>
                     </div>
 
                     <div className={styles.section}>
-                        <h3>Ambience Layer</h3>
-                        <button
-                            className={`${styles.optionBtn} ${isNatureOn ? styles.active : ''}`}
-                            onClick={toggleNature}
-                            style={{ width: '100%' }}
-                        >
-                            {isNatureOn ? '🌧️ Nature Sounds ON' : '☁️ Nature Sounds OFF'}
-                        </button>
-                        <p style={{ fontSize: '0.8rem', color: '#95a5a6', marginTop: '8px' }}>
-                            Mixes gentle rain and chirps with the base frequency.
-                        </p>
-                    </div>
-
-                    <div className={styles.section}>
-                        <h3>Playback</h3>
-                        <button
-                            className={`${styles.playBtn} ${isPlaying ? styles.playing : ''}`}
-                            onClick={togglePlay}
-                        // disabled only if BOTH are off, or just allow play to start defaults?
-                        // Let's allow play, if both off, silence plays (logic handles it).
-                        >
-                            {isPlaying ? t.game.paused : t.game.start}
-                        </button>
-                    </div>
-
-                    <div className={styles.section}>
-                        <h3>Volume</h3>
+                        <h3>Master Volume</h3>
                         <input
                             type="range"
                             min="0"
                             max="1"
-                            step="0.05" // Coarser step to prevent event spam?
+                            step="0.05"
                             value={volume}
                             onChange={(e) => setVolume(parseFloat(e.target.value))}
                             className={styles.slider}
