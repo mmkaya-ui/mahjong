@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function SoundSanctuary({ onClose }: Props) {
-    const { ambientType, setAmbientType, volume, setVolume, isPlaying, togglePlay } = useAudio();
+    const { frequency, setFrequency, isNatureOn, toggleNature, volume, setVolume, isPlaying, togglePlay } = useAudio();
     const { t } = useLanguage();
 
     return (
@@ -18,28 +18,28 @@ export default function SoundSanctuary({ onClose }: Props) {
             <div className={styles.modal} onClick={e => e.stopPropagation()}>
                 <div className={styles.header}>
                     <h2>{t.settings.soundSanctuary}</h2>
-                    <button className={styles.closeBtn} onClick={onClose}>×</button>
+                    <button className={styles.closeBtn} onClick={onClose} aria-label="Close">×</button>
                 </div>
 
-                <div className={styles.content}>
+                <div className={styles.scrollContent}>
                     <div className={styles.section}>
-                        <h3>Frequency</h3>
+                        <h3>{t.sounds.healing} (Base)</h3>
                         <div className={styles.options}>
                             <button
-                                className={`${styles.optionBtn} ${ambientType === 'healing' ? styles.active : ''}`}
-                                onClick={() => setAmbientType('healing')}
+                                className={`${styles.optionBtn} ${frequency === '528' ? styles.active : ''}`}
+                                onClick={() => setFrequency('528')}
                             >
-                                {t.sounds.healing}
+                                528 Hz (Love & Repair)
                             </button>
                             <button
-                                className={`${styles.optionBtn} ${ambientType === 'nature' ? styles.active : ''}`}
-                                onClick={() => setAmbientType('nature')}
+                                className={`${styles.optionBtn} ${frequency === '432' ? styles.active : ''}`}
+                                onClick={() => setFrequency('432')}
                             >
-                                {t.sounds.nature}
+                                432 Hz (Peace & Nature)
                             </button>
                             <button
-                                className={`${styles.optionBtn} ${ambientType === 'off' ? styles.active : ''}`}
-                                onClick={() => setAmbientType('off')}
+                                className={`${styles.optionBtn} ${frequency === 'off' ? styles.active : ''}`}
+                                onClick={() => setFrequency('off')}
                             >
                                 {t.sounds.off}
                             </button>
@@ -47,11 +47,26 @@ export default function SoundSanctuary({ onClose }: Props) {
                     </div>
 
                     <div className={styles.section}>
+                        <h3>Ambience Layer</h3>
+                        <button
+                            className={`${styles.optionBtn} ${isNatureOn ? styles.active : ''}`}
+                            onClick={toggleNature}
+                            style={{ width: '100%' }}
+                        >
+                            {isNatureOn ? '🌧️ Nature Sounds ON' : '☁️ Nature Sounds OFF'}
+                        </button>
+                        <p style={{ fontSize: '0.8rem', color: '#95a5a6', marginTop: '8px' }}>
+                            Mixes gentle rain and chirps with the base frequency.
+                        </p>
+                    </div>
+
+                    <div className={styles.section}>
                         <h3>Playback</h3>
                         <button
                             className={`${styles.playBtn} ${isPlaying ? styles.playing : ''}`}
                             onClick={togglePlay}
-                            disabled={ambientType === 'off'}
+                        // disabled only if BOTH are off, or just allow play to start defaults?
+                        // Let's allow play, if both off, silence plays (logic handles it).
                         >
                             {isPlaying ? t.game.paused : t.game.start}
                         </button>
@@ -63,10 +78,11 @@ export default function SoundSanctuary({ onClose }: Props) {
                             type="range"
                             min="0"
                             max="1"
-                            step="0.01"
+                            step="0.05" // Coarser step to prevent event spam?
                             value={volume}
                             onChange={(e) => setVolume(parseFloat(e.target.value))}
                             className={styles.slider}
+                            style={{ cursor: 'pointer' }}
                         />
                     </div>
                 </div>

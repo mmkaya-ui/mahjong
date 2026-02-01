@@ -20,6 +20,29 @@
     max-width: 400px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     animation: slideUp 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+    max-height: 85vh;
+    /* Limit height on small screens */
+}
+
+.scrollContent {
+    overflow-y: auto;
+    padding-right: 4px;
+    /* Space for scrollbar */
+    flex: 1;
+    /* Custom Scrollbar for webkit */
+    scrollbar-width: thin;
+    scrollbar-color: #bdc3c7 transparent;
+}
+
+.scrollContent::-webkit-scrollbar {
+    width: 4px;
+}
+
+.scrollContent::-webkit-scrollbar-thumb {
+    background: #bdc3c7;
+    border-radius: 4px;
 }
 
 @keyframes slideUp {
