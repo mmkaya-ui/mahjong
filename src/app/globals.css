@@ -30,11 +30,14 @@ body {
 }
 
 .game-header {
-  height: var(--game-header-height);
+  min-height: var(--game-header-height);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: 5px;
+  /* Slight bottom padding for balance */
 }
 
 .game-header h1 {
