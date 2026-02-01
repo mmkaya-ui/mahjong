@@ -73,7 +73,7 @@ export default function Controls({ onOpenSound }: Props) {
                         }}
                         title="Change Game Mode"
                     >
-                        <span>{gameMode === 'zen' ? '☯️ ZEN' : '🎲 REAL'}</span>
+                        <span>{gameMode === 'zen' ? `☯️ ${t.modes.zen}` : `🎲 ${t.modes.realism}`}</span>
                     </button>
                     <div className={styles.iconGroup}>
                         <button className={styles.iconBtn} onClick={onOpenSound} aria-label="Sound Settings">

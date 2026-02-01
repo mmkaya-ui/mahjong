@@ -43,6 +43,10 @@ export const tr: Translations = {
         normal: 'NORMAL',
         hard: 'ZOR',
     },
+    modes: {
+        zen: 'ZEN',
+        realism: 'GERÇEK',
+    },
     help: {
         title: 'Nasıl Oynanır',
         goal: 'Amaç',

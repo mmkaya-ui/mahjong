@@ -32,6 +32,10 @@ export interface Translations {
         normal: string;
         hard: string;
     };
+    modes: {
+        zen: string;
+        realism: string;
+    };
     settings: {
         title: string;
         soundSanctuary: string;

@@ -43,6 +43,10 @@ export const en: Translations = {
         normal: 'NORMAL',
         hard: 'HARD',
     },
+    modes: {
+        zen: 'ZEN',
+        realism: 'REAL',
+    },
     help: {
         title: 'How to Play',
         goal: 'Goal',

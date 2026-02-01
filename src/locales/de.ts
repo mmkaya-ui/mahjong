@@ -43,6 +43,10 @@ export const de: Translations = {
         normal: 'NORMAL',
         hard: 'SCHWER',
     },
+    modes: {
+        zen: 'ZEN',
+        realism: 'ECHT',
+    },
     help: {
         title: 'Spielanleitung',
         goal: 'Ziel',
