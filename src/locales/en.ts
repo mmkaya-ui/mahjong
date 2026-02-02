@@ -62,5 +62,16 @@ export const en: Translations = {
         controls: 'Controls',
         controlsDesc: 'Use Shuffle if stuck. Use Hint to find a match.',
         close: 'Understood'
+    },
+    rewards: {
+        title: 'Unlocked Treasures',
+        tapToOpen: 'Tap to Open!',
+        unlocked: 'Unlocked!',
+        back: 'Back to Collection',
+        reset: 'Reset Collection',
+        resetConfirm: 'Are you sure you want to delete all your trophies? This cannot be undone.',
+        noRewards: 'No treasures found yet. Keep playing to find Gift Boxes!',
+        awesome: 'Awesome!',
+        collection: 'Collection'
     }
 };

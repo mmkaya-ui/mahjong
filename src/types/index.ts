@@ -63,4 +63,15 @@ export interface Translations {
         controlsDesc: string;
         close: string;
     };
+    rewards: {
+        title: string;
+        tapToOpen: string;
+        unlocked: string;
+        back: string;
+        reset: string;
+        resetConfirm: string;
+        noRewards: string;
+        awesome: string;
+        collection: string;
+    };
 }

@@ -62,5 +62,16 @@ export const tr: Translations = {
         controls: 'Kontroller',
         controlsDesc: 'Sıkışırsanız Karıştır\'ı kullanın. İpucu için Ampul\'e basın.',
         close: 'Anlaşıldı'
+    },
+    rewards: {
+        title: 'Kazanılan Hazineler',
+        tapToOpen: 'Açmak için Dokun!',
+        unlocked: 'Kilit Açıldı!',
+        back: 'Koleksiyona Dön',
+        reset: 'Koleksiyonu Sıfırla',
+        resetConfirm: 'Tüm kupalarını silmek istediğine emin misin? Bu işlem geri alınamaz.',
+        noRewards: 'Henüz hazine bulunamadı. Hediye Kutularını bulmak için oynamaya devam et!',
+        awesome: 'Harika!',
+        collection: 'Koleksiyon'
     }
 };
