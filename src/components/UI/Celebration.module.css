@@ -46,6 +46,9 @@
     align-items: center;
     font-size: 3rem;
     animation: boxShake 3s infinite;
+    pointer-events: auto;
+    /* Enable clicks */
+    cursor: pointer;
 }
 
 .box::before {

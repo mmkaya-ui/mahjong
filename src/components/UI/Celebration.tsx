@@ -101,6 +101,16 @@ export default function Celebration() {
         setShowRewardModal(true);
     };
 
+    // Auto-open after delay if user doesn't click
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (!hasOpened) {
+                handleBoxClick();
+            }
+        }, 3000); // 3 seconds
+        return () => clearTimeout(timer);
+    }, [hasOpened]);
+
     return (
         <div className={styles.overlay}>
             <canvas ref={canvasRef} className={styles.canvas} />
