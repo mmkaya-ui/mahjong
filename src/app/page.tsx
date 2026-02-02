@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { AudioProvider } from '@/context/AudioContext';
+import { UnlockedItemsProvider } from '@/context/UnlockedItemsContext';
 import { GameProvider } from '@/context/GameContext';
 import Board from '@/components/Game/Board';
 import Controls from '@/components/UI/Controls';
@@ -34,9 +35,11 @@ export default function Home() {
   return (
     <LanguageProvider>
       <AudioProvider>
-        <GameProvider>
-          <GameApp />
-        </GameProvider>
+        <UnlockedItemsProvider>
+          <GameProvider>
+            <GameApp />
+          </GameProvider>
+        </UnlockedItemsProvider>
       </AudioProvider>
     </LanguageProvider>
   );

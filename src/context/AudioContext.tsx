@@ -83,27 +83,37 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
             const t = ctx.currentTime;
 
             if (t >= nextChirpTimeRef.current) {
-                if (Math.random() > 0.4) {
-                    // Procedural Bird Chirp - Could move to Engine.playBird()
-                    // Re-implementing simplified chirp here or exposing engine method?
-                    // Let's implement playBird in engine for cleaner code.
-                    // For now, inline to save complexity of adding to Engine just yet.
-
+                // Higher chance to chirp (80%)
+                if (Math.random() > 0.2) {
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
-                    osc.type = 'sine';
-                    const startFreq = 1500 + Math.random() * 1000;
+                    osc.type = Math.random() > 0.5 ? 'sine' : 'triangle'; // Variation
+
+                    // Higher pitch range for more "bird-like" sound
+                    const startFreq = 2000 + Math.random() * 1500;
                     osc.frequency.setValueAtTime(startFreq, t);
-                    osc.frequency.exponentialRampToValueAtTime(startFreq * 0.8, t + 0.15);
+
+                    // Complex envelope for "Chirp-chirp" effect sometimes
+                    if (Math.random() > 0.7) {
+                        // Double chirp
+                        osc.frequency.linearRampToValueAtTime(startFreq + 500, t + 0.1);
+                        osc.frequency.linearRampToValueAtTime(startFreq, t + 0.2);
+                    } else {
+                        // Single slide
+                        osc.frequency.exponentialRampToValueAtTime(startFreq * 0.5, t + 0.15);
+                    }
+
                     gain.gain.setValueAtTime(0, t);
-                    gain.gain.linearRampToValueAtTime(0.08 * volume, t + 0.05);
-                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+                    gain.gain.linearRampToValueAtTime(0.1 * volume, t + 0.02);
+                    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+
                     osc.connect(gain);
                     gain.connect(ctx.destination);
                     osc.start(t);
-                    osc.stop(t + 0.35);
+                    osc.stop(t + 0.3);
                 }
-                nextChirpTimeRef.current = t + 5 + Math.random() * 8;
+                // Much shorter interval: 2 to 6 seconds
+                nextChirpTimeRef.current = t + 2 + Math.random() * 4;
             }
             animationFrameRef.current = requestAnimationFrame(birdsLoop);
         };

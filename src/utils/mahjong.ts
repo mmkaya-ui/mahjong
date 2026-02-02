@@ -69,6 +69,11 @@ export function generateDeck(targetCount: number = 144): Omit<Tile, 'x' | 'y' | 
         deck.push({ id: `tile-${id++}`, type: 'season', value: s });
     });
 
+    // Gift Boxes (2 pairs = 4 tiles)
+    for (let i = 0; i < 4; i++) {
+        deck.push({ id: `tile-${id++}`, type: 'giftbox', value: 'mystery' });
+    }
+
     return deck;
 }
 
@@ -80,6 +85,7 @@ export function canMatch(t1: Tile, t2: Tile): boolean {
         // Special cases: Flowers and Seasons match any of their kind
         if (t1.type === 'flower' && t2.type === 'flower') return true;
         if (t1.type === 'season' && t2.type === 'season') return true;
+        if (t1.type === 'giftbox' && t2.type === 'giftbox') return true;
         return false;
     }
     // Same type, check value

@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Shuffle, Lightbulb, Volume2, Globe, Signal, CircleHelp } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shuffle, Lightbulb, Volume2, Globe, Signal, CircleHelp, Gift } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useUnlockedItems } from '@/context/UnlockedItemsContext';
 import styles from './Controls.module.css';
 import HelpModal from './HelpModal';
+import RewardsMenu from '../Rewards/RewardsMenu';
 import Celebration from './Celebration';
 
 interface Props {
@@ -28,7 +30,24 @@ export default function Controls({ onOpenSound }: Props) {
         shufflesRemaining
     } = useGame();
     const { t, language, setLanguage } = useLanguage();
+    const { unlockItem } = useUnlockedItems();
+
     const [isHelpOpen, setIsHelpOpen] = useState(false);
+    const [isRewardsOpen, setIsRewardsOpen] = useState(false);
+
+    // Listen for Gift Unlock Event
+    useEffect(() => {
+        const handleUnlock = (e: any) => {
+            // e.detail contains {x, y} if we want to spawn an effect there later
+            const types: any[] = ['car', 'plane', 'train', 'ship'];
+            const randomType = types[Math.floor(Math.random() * types.length)];
+            unlockItem(randomType);
+            setIsRewardsOpen(true);
+        };
+
+        window.addEventListener('mahjong-gift-unlocked', handleUnlock);
+        return () => window.removeEventListener('mahjong-gift-unlocked', handleUnlock);
+    }, [unlockItem]);
 
     const toggleLanguage = () => {
         const next: Record<string, 'tr' | 'en' | 'de'> = { tr: 'en', en: 'de', de: 'tr' };
@@ -156,6 +175,9 @@ export default function Controls({ onOpenSound }: Props) {
                                 <Globe size={20} />
                                 <span className={styles.langBadge}>{language.toUpperCase()}</span>
                             </button>
+                            <button className={styles.iconBtn} onClick={() => setIsRewardsOpen(true)} aria-label="Rewards">
+                                <Gift size={20} />
+                            </button>
                             <button className={styles.iconBtn} onClick={() => setIsHelpOpen(true)} aria-label="Help">
                                 <CircleHelp size={20} />
                             </button>
@@ -170,6 +192,7 @@ export default function Controls({ onOpenSound }: Props) {
                 )}
             </div>
 
+            {isRewardsOpen && <RewardsMenu onClose={() => setIsRewardsOpen(false)} />}
             {isHelpOpen && <HelpModal onClose={() => setIsHelpOpen(false)} />}
             <NoMovesToast />
         </>

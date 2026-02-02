@@ -56,6 +56,8 @@ const getTileContent = (tile: TileType) => {
             const seasons = ['spring', 'summer', 'autumn', 'winter'];
             offset = 38 + seasons.indexOf(tile.value as string);
             break;
+        case 'giftbox':
+            return '🎁';
     }
 
     return String.fromCodePoint(base + offset);
@@ -71,6 +73,7 @@ const getTileColor = (tile: TileType) => {
     if (tile.type === 'dots') return '#2980b9';
     if (tile.type === 'flower') return '#d63384'; // Pink
     if (tile.type === 'season') return '#8e44ad'; // Purple
+    if (tile.type === 'giftbox') return '#e74c3c'; // Red
     return '#34495e';
 };
 

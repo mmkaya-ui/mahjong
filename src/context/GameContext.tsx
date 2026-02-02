@@ -180,6 +180,20 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
                 setScore(newScore);
                 setMatches(m => m + 1);
 
+                // Check if it's a Gift Box
+                if (selectedTile.type === 'giftbox') {
+                    if (typeof window !== 'undefined') {
+                        // Pass the center position or just the event
+                        // Ideally we pass tile coordinates to animate from, but for now just trigger
+                        window.dispatchEvent(new CustomEvent('mahjong-gift-unlocked', {
+                            detail: {
+                                x: (selectedTile.x + tile.x) / 2,
+                                y: (selectedTile.y + tile.y) / 2
+                            }
+                        }));
+                    }
+                }
+
                 // Remove tiles
                 const remaining = tiles.filter(t => t.id !== selectedTile.id && t.id !== tile.id);
 
