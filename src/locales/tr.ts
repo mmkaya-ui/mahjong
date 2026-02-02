@@ -11,6 +11,8 @@ export const tr: Translations = {
         score: 'Puan',
         noMoves: 'Hamle kalmadı! Karıştırmayı dene.',
         tryAgain: 'Tekrar Dene',
+        changeDifficulty: 'Zorluğu Değiştir',
+        changeMode: 'Oyun Modunu Değiştir',
     },
     settings: {
         title: 'Ayarlar',

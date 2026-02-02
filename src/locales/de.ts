@@ -11,6 +11,8 @@ export const de: Translations = {
         score: 'Punktzahl',
         noMoves: 'Keine Züge mehr! Versuche zu mischen.',
         tryAgain: 'Noch einmal',
+        changeDifficulty: 'Schwierigkeit ändern',
+        changeMode: 'Spielmodus ändern',
     },
     settings: {
         title: 'Einstellungen',
@@ -49,7 +51,7 @@ export const de: Translations = {
         zen: 'ZEN',
         realism: 'ECHT',
         hardcore: 'HARDCORE',
-        maximum: 'MAXIMUM',
+        maximum: 'MAKSIMUM',
     },
     help: {
         title: 'Spielanleitung',
@@ -60,7 +62,18 @@ export const de: Translations = {
         modes: 'Spielmodi',
         modesDesc: 'ZEN: Lösbar (Strategie). ECHT: Zufall (Glück).',
         controls: 'Steuerung',
-        controlsDesc: 'Nutze Mischen beiblockaden. Nutze Hinweis für Hilfe.',
+        controlsDesc: 'Nutze Mischen wenn du feststeckst. Benutze Hinweis für Hilfe.',
         close: 'Verstanden'
+    },
+    rewards: {
+        title: 'Freiheschaltete Schätze',
+        tapToOpen: 'Zum Öffnen tippen!',
+        unlocked: 'Freigeschaltet!',
+        back: 'Zurück zur Sammlung',
+        reset: 'Sammlung zurücksetzen',
+        resetConfirm: 'Bist du sicher, dass du alle Trophäen löschen möchtest? Dies kann nicht rückgängig gemacht werden.',
+        noRewards: 'Noch keine Schätze gefunden. Spiel weiter, um Geschenkboxen zu finden!',
+        awesome: 'Super!',
+        collection: 'Sammlung'
     }
 };

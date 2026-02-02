@@ -11,6 +11,8 @@ export interface Translations {
         score: string;
         noMoves: string;
         tryAgain: string;
+        changeDifficulty: string;
+        changeMode: string;
     };
     sounds: {
         healing: string;

@@ -3,6 +3,8 @@
 import React, { useEffect, useRef } from 'react';
 import styles from './Celebration.module.css';
 import { useUnlockedItems } from '@/context/UnlockedItemsContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { REWARD_DATA } from '@/data/rewards';
 
 export default function Celebration() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -84,6 +86,7 @@ export default function Celebration() {
     }, []);
 
     const { unlockItem } = useUnlockedItems();
+    const { t, language } = useLanguage();
     const [hasOpened, setHasOpened] = React.useState(false);
     const [reward, setReward] = React.useState<any | null>(null);
     const [showRewardModal, setShowRewardModal] = React.useState(false);
@@ -109,6 +112,9 @@ export default function Celebration() {
         return () => clearTimeout(timer);
     }, [hasOpened]);
 
+    // Resolve localized reward data
+    const rewardData = reward ? REWARD_DATA.find(r => r.id === reward.id) : null;
+
     return (
         <div className={styles.overlay}>
             <canvas ref={canvasRef} className={styles.canvas} />
@@ -123,12 +129,12 @@ export default function Celebration() {
                     onClick={handleBoxClick}
                     style={{ cursor: hasOpened ? 'default' : 'pointer' }}
                 >
-                    {!hasOpened && <span style={{ position: 'absolute', bottom: '-40px', fontSize: '1rem', color: 'white', background: 'rgba(0,0,0,0.5)', padding: '5px 10px', borderRadius: '10px', whiteSpace: 'nowrap' }}>Tap to Open!</span>}
+                    {!hasOpened && <span style={{ position: 'absolute', bottom: '-40px', fontSize: '1rem', color: 'white', background: 'rgba(0,0,0,0.5)', padding: '5px 10px', borderRadius: '10px', whiteSpace: 'nowrap' }}>{t.rewards.tapToOpen}</span>}
                 </div>
             </div>
 
             {/* Simple Reward Popup within Celebration */}
-            {showRewardModal && reward && (
+            {showRewardModal && rewardData && (
                 <div style={{
                     position: 'fixed',
                     inset: 0,
@@ -150,12 +156,12 @@ export default function Celebration() {
                         maxWidth: '90%',
                         width: '400px'
                     }}>
-                        <h2 style={{ color: '#f1c40f', fontSize: '2rem', marginBottom: '10px' }}>🌟 Unlocked! 🌟</h2>
+                        <h2 style={{ color: '#f1c40f', fontSize: '2rem', marginBottom: '10px' }}>🌟 {t.rewards.unlocked} 🌟</h2>
                         <div style={{ fontSize: '6rem', margin: '20px 0', textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>
                             {reward.icon}
                         </div>
-                        <h3 style={{ color: 'white', marginBottom: '30px' }}>{reward.name}</h3>
-                        <p style={{ color: '#aaa', marginBottom: '20px', fontSize: '0.9rem' }}>{reward.category}</p>
+                        <h3 style={{ color: 'white', marginBottom: '30px' }}>{rewardData.name[language]}</h3>
+                        <p style={{ color: '#aaa', marginBottom: '20px', fontSize: '0.9rem' }}>{rewardData.category[language]}</p>
                         <button
                             onClick={() => setShowRewardModal(false)}
                             style={{
@@ -171,7 +177,7 @@ export default function Celebration() {
                                 boxShadow: '0 5px 15px rgba(241, 196, 15, 0.4)'
                             }}
                         >
-                            Awesome!
+                            {t.rewards.awesome}
                         </button>
                     </div>
                 </div>

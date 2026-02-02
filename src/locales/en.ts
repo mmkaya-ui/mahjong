@@ -11,6 +11,8 @@ export const en: Translations = {
         score: 'Score',
         noMoves: 'No moves available! Try Shuffle.',
         tryAgain: 'Try Again',
+        changeDifficulty: 'Change Difficulty',
+        changeMode: 'Change Game Mode',
     },
     settings: {
         title: 'Settings',

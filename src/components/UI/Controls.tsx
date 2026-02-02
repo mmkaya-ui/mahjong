@@ -132,7 +132,7 @@ export default function Controls({ onOpenSound }: Props) {
                                 background: difficulty === 'easy' ? '#2ecc71' : difficulty === 'hard' ? '#e74c3c' : '#f1c40f',
                                 color: '#fff',
                             }}
-                            title="Change Difficulty"
+                            title={t.game.changeDifficulty}
                         >
                             <Signal size={16} />
                             <span>{t.difficulties[difficulty]}</span>
@@ -148,23 +148,23 @@ export default function Controls({ onOpenSound }: Props) {
                                 background: getModeColor(),
                                 color: '#fff'
                             }}
-                            title="Change Game Mode"
+                            title={t.game.changeMode}
                         >
                             <span>{getModeLabel()}</span>
                         </button>
 
                         <div className={styles.iconGroup}>
-                            <button className={styles.iconBtn} onClick={onOpenSound} aria-label="Sound Settings">
+                            <button className={styles.iconBtn} onClick={onOpenSound} aria-label={t.settings.title}>
                                 <Volume2 size={20} />
                             </button>
-                            <button className={styles.iconBtn} onClick={toggleLanguage} aria-label="Change Language">
+                            <button className={styles.iconBtn} onClick={toggleLanguage} aria-label={t.settings.language}>
                                 <Globe size={20} />
                                 <span className={styles.langBadge}>{language.toUpperCase()}</span>
                             </button>
-                            <button className={styles.iconBtn} onClick={() => setIsRewardsOpen(true)} aria-label="Rewards">
+                            <button className={styles.iconBtn} onClick={() => setIsRewardsOpen(true)} aria-label={t.rewards.title}>
                                 <Gift size={20} />
                             </button>
-                            <button className={styles.iconBtn} onClick={() => setIsHelpOpen(true)} aria-label="Help">
+                            <button className={styles.iconBtn} onClick={() => setIsHelpOpen(true)} aria-label={t.help.title}>
                                 <CircleHelp size={20} />
                             </button>
                         </div>
@@ -173,7 +173,7 @@ export default function Controls({ onOpenSound }: Props) {
 
                 {isWon && (
                     <button className={styles.resetBtn} onClick={resetGame}>
-                        Play Again
+                        {t.game.tryAgain}
                     </button>
                 )}
             </div>
