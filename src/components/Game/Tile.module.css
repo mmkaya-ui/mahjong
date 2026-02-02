@@ -87,20 +87,27 @@
   font-family: "Segoe UI Symbol", "Apple Symbols", sans-serif;
 }
 
+/* Define classes to ensure export */
+.normalMode {}
+
+.hardMode {}
+
 @media (max-width: 600px) {
   .symbol {
     font-size: 42px;
     /* Base Increase */
+    display: inline-block;
+    transform-origin: center center;
   }
 
+  /* Aggressively scale icons in denser modes to maintain legibility */
+  /* Scale 1.7 pushes the icon to the absolute edge of the tile face */
   .normalMode .symbol,
   .hardMode .symbol {
-    font-size: 52px;
-    /* Maximum size for readability on dense boards */
+    font-size: 42px;
+    transform: scale(1.7);
+    margin-top: -3px;
     line-height: 1;
-    /* Ensure no extra vertical space */
-    margin-top: -2px;
-    /* Subtle optical adjustment */
   }
 }
 
