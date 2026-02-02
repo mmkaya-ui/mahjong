@@ -110,6 +110,7 @@ export default function Board() {
                                 tile={tile}
                                 onClick={selectTile}
                                 isHinted={isHinted}
+                                difficulty={difficulty}
                             />
                         );
                     })}

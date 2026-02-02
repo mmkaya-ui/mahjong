@@ -90,7 +90,17 @@
 @media (max-width: 600px) {
   .symbol {
     font-size: 42px;
-    /* Larger icons for mobile */
+    /* Base Increase */
+  }
+
+  .normalMode .symbol,
+  .hardMode .symbol {
+    font-size: 52px;
+    /* Maximum size for readability on dense boards */
+    line-height: 1;
+    /* Ensure no extra vertical space */
+    margin-top: -2px;
+    /* Subtle optical adjustment */
   }
 }
 
