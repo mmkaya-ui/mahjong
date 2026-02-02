@@ -12,6 +12,7 @@ interface UnlockedItemsContextType {
     unlockedItems: UnlockedItem[];
     unlockItem: () => UnlockedItem;
     isItemUnlocked: (id: string) => boolean;
+    clearProgress: () => void;
 }
 
 const UnlockedItemsContext = createContext<UnlockedItemsContextType | undefined>(undefined);
@@ -31,6 +32,11 @@ export function UnlockedItemsProvider({ children }: { children: React.ReactNode 
             }
         }
     }, []);
+
+    const clearProgress = () => {
+        setUnlockedItems([]);
+        localStorage.removeItem(STORAGE_KEY);
+    };
 
     const unlockItem = (): UnlockedItem => {
         // Pick a random item from REWARD_DATA that isn't already unlocked?
@@ -70,7 +76,7 @@ export function UnlockedItemsProvider({ children }: { children: React.ReactNode 
     };
 
     return (
-        <UnlockedItemsContext.Provider value={{ unlockedItems, unlockItem, isItemUnlocked }}>
+        <UnlockedItemsContext.Provider value={{ unlockedItems, unlockItem, isItemUnlocked, clearProgress }}>
             {children}
         </UnlockedItemsContext.Provider>
     );
