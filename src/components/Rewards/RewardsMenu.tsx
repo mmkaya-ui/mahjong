@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { useUnlockedItems } from '@/context/UnlockedItemsContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { REWARD_DATA } from '@/data/rewards';
 import { X } from 'lucide-react';
 
 interface RewardsMenuProps {
@@ -10,12 +12,14 @@ interface RewardsMenuProps {
 
 export default function RewardsMenu({ onClose }: RewardsMenuProps) {
     const { unlockedItems, clearProgress } = useUnlockedItems();
+    const { t, language } = useLanguage();
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
     const activeItem = unlockedItems.find(i => i.id === selectedItem);
+    const activeData = activeItem ? REWARD_DATA.find(r => r.id === activeItem.id) : null;
 
     const handleReset = () => {
-        if (confirm('Are you sure you want to delete all your trophies? This cannot be undone.')) {
+        if (confirm(t.rewards.resetConfirm)) {
             clearProgress();
         }
     };
@@ -48,10 +52,10 @@ export default function RewardsMenu({ onClose }: RewardsMenuProps) {
                 <X size={32} />
             </button>
 
-            {activeItem ? (
+            {activeItem && activeData ? (
                 <div style={{ width: '100%', maxWidth: '600px', textAlign: 'center', animation: 'fadeIn 0.3s' }}>
-                    <h2 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>{activeItem.name}</h2>
-                    <p style={{ color: '#aaa', marginBottom: '30px' }}>{activeItem.category}</p>
+                    <h2 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>{activeData.name[language]}</h2>
+                    <p style={{ color: '#aaa', marginBottom: '30px' }}>{activeData.category[language]}</p>
 
                     <div style={{
                         fontSize: '10rem',
@@ -76,7 +80,7 @@ export default function RewardsMenu({ onClose }: RewardsMenuProps) {
                             fontSize: '1.1rem'
                         }}
                     >
-                        Back to Collection
+                        {t.rewards.back}
                     </button>
                     <style jsx>{`
                         @keyframes float {
@@ -88,16 +92,16 @@ export default function RewardsMenu({ onClose }: RewardsMenuProps) {
                 </div>
             ) : (
                 <div style={{ width: '100%', maxWidth: '900px', height: '80vh', display: 'flex', flexDirection: 'column' }}>
-                    <h2 style={{ fontSize: '2.5rem', textAlign: 'center', marginBottom: '10px' }}>Unlocked Treasures</h2>
+                    <h2 style={{ fontSize: '2.5rem', textAlign: 'center', marginBottom: '10px' }}>{t.rewards.title}</h2>
                     <p style={{ textAlign: 'center', marginBottom: '30px', opacity: 0.7 }}>
-                        Collection: {unlockedItems.length} items
+                        {t.rewards.collection}: {unlockedItems.length}
                     </p>
 
                     {unlockedItems.length === 0 ? (
                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
                             <p style={{ fontSize: '1.5rem', opacity: 0.5, marginBottom: '20px' }}>🔐</p>
                             <p style={{ textAlign: 'center', fontSize: '1.2rem', opacity: 0.6 }}>
-                                No treasures found yet. Keep playing to find Gift Boxes!
+                                {t.rewards.noRewards}
                             </p>
                         </div>
                     ) : (
@@ -109,46 +113,49 @@ export default function RewardsMenu({ onClose }: RewardsMenuProps) {
                             padding: '10px',
                             alignContent: 'start'
                         }}>
-                            {unlockedItems.map(item => (
-                                <div
-                                    key={item.id}
-                                    onClick={() => setSelectedItem(item.id)}
-                                    style={{
-                                        background: 'rgba(255,255,255,0.05)',
-                                        borderRadius: '16px',
-                                        padding: '15px',
-                                        cursor: 'pointer',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        transition: 'all 0.2s',
-                                        border: '1px solid rgba(255,255,255,0.1)'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = 'scale(1.05)';
-                                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = 'scale(1)';
-                                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                                    }}
-                                >
-                                    <div style={{ fontSize: '40px', marginBottom: '10px' }}>
-                                        {item.icon}
+                            {unlockedItems.map(item => {
+                                const data = REWARD_DATA.find(r => r.id === item.id);
+                                return (
+                                    <div
+                                        key={item.id}
+                                        onClick={() => setSelectedItem(item.id)}
+                                        style={{
+                                            background: 'rgba(255,255,255,0.05)',
+                                            borderRadius: '16px',
+                                            padding: '15px',
+                                            cursor: 'pointer',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            transition: 'all 0.2s',
+                                            border: '1px solid rgba(255,255,255,0.1)'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                            e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '40px', marginBottom: '10px' }}>
+                                            {item.icon}
+                                        </div>
+                                        <span style={{
+                                            fontSize: '0.85rem',
+                                            textAlign: 'center',
+                                            fontWeight: '500',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            width: '100%'
+                                        }}>
+                                            {data ? data.name[language] : '???'}
+                                        </span>
                                     </div>
-                                    <span style={{
-                                        fontSize: '0.85rem',
-                                        textAlign: 'center',
-                                        fontWeight: '500',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap',
-                                        width: '100%'
-                                    }}>
-                                        {item.name}
-                                    </span>
-                                </div>
-                            ))}
+                                )
+                            })}
                         </div>
                     )}
 
@@ -170,7 +177,7 @@ export default function RewardsMenu({ onClose }: RewardsMenuProps) {
                                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,0,0,0.1)'}
                                 onMouseLeave={e => e.currentTarget.style.background = 'none'}
                             >
-                                Reset Collection
+                                {t.rewards.reset}
                             </button>
                         )}
                     </div>
