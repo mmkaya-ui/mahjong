@@ -35,20 +35,6 @@ export default function Controls({ onOpenSound }: Props) {
     const [isHelpOpen, setIsHelpOpen] = useState(false);
     const [isRewardsOpen, setIsRewardsOpen] = useState(false);
 
-    // Listen for Gift Unlock Event
-    useEffect(() => {
-        const handleUnlock = (e: any) => {
-            // e.detail contains {x, y} if we want to spawn an effect there later
-            const types: any[] = ['car', 'plane', 'train', 'ship'];
-            const randomType = types[Math.floor(Math.random() * types.length)];
-            unlockItem(randomType);
-            setIsRewardsOpen(true);
-        };
-
-        window.addEventListener('mahjong-gift-unlocked', handleUnlock);
-        return () => window.removeEventListener('mahjong-gift-unlocked', handleUnlock);
-    }, [unlockItem]);
-
     const toggleLanguage = () => {
         const next: Record<string, 'tr' | 'en' | 'de'> = { tr: 'en', en: 'de', de: 'tr' };
         setLanguage(next[language]);

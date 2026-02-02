@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import styles from './Celebration.module.css';
+import { useUnlockedItems } from '@/context/UnlockedItemsContext';
 
 export default function Celebration() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -82,6 +83,24 @@ export default function Celebration() {
         };
     }, []);
 
+    const { unlockItem } = useUnlockedItems();
+    const [hasOpened, setHasOpened] = React.useState(false);
+    const [reward, setReward] = React.useState<{ type: string, name: string } | null>(null);
+    const [showRewardModal, setShowRewardModal] = React.useState(false);
+
+    const handleBoxClick = () => {
+        if (hasOpened) return;
+
+        // Unlock a random item
+        const types: any[] = ['car', 'plane', 'train', 'ship'];
+        const randomType = types[Math.floor(Math.random() * types.length)];
+        const newItem = unlockItem(randomType);
+
+        setReward(newItem);
+        setHasOpened(true);
+        setShowRewardModal(true);
+    };
+
     return (
         <div className={styles.overlay}>
             <canvas ref={canvasRef} className={styles.canvas} />
@@ -89,8 +108,67 @@ export default function Celebration() {
                 <div className={styles.cat}>🐱</div>
                 <div className={styles.cat}>😸</div>
                 <div className={styles.cat}>😻</div>
-                <div className={styles.box}></div>
+
+                {/* Interactive Box */}
+                <div
+                    className={`${styles.box} ${hasOpened ? styles.opened : ''}`}
+                    onClick={handleBoxClick}
+                    style={{ cursor: hasOpened ? 'default' : 'pointer' }}
+                >
+                    {!hasOpened && <span style={{ position: 'absolute', bottom: '-40px', fontSize: '1rem', color: 'white', background: 'rgba(0,0,0,0.5)', padding: '5px 10px', borderRadius: '10px', whiteSpace: 'nowrap' }}>Tap to Open!</span>}
+                </div>
             </div>
+
+            {/* Simple Reward Popup within Celebration */}
+            {showRewardModal && reward && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 2000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(0,0,0,0.8)',
+                    animation: 'fadeIn 0.3s ease-out'
+                }}>
+                    <div style={{
+                        background: 'linear-gradient(135deg, #2c3e50, #000000)',
+                        padding: '40px',
+                        borderRadius: '20px',
+                        textAlign: 'center',
+                        border: '2px solid #f1c40f',
+                        boxShadow: '0 0 50px rgba(241, 196, 15, 0.3)',
+                        maxWidth: '90%',
+                        width: '400px'
+                    }}>
+                        <h2 style={{ color: '#f1c40f', fontSize: '2rem', marginBottom: '10px' }}>🌟 Unlocked! 🌟</h2>
+                        <div style={{ fontSize: '4rem', margin: '20px 0' }}>
+                            {reward.type === 'car' && '🚗'}
+                            {reward.type === 'plane' && '✈️'}
+                            {reward.type === 'train' && '🚂'}
+                            {reward.type === 'ship' && '🚢'}
+                        </div>
+                        <h3 style={{ color: 'white', marginBottom: '30px' }}>{reward.name}</h3>
+                        <button
+                            onClick={() => setShowRewardModal(false)}
+                            style={{
+                                background: '#f1c40f',
+                                color: '#000',
+                                border: 'none',
+                                padding: '12px 30px',
+                                fontSize: '1.2rem',
+                                borderRadius: '30px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s',
+                                boxShadow: '0 5px 15px rgba(241, 196, 15, 0.4)'
+                            }}
+                        >
+                            Awesome!
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

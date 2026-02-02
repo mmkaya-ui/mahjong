@@ -32,6 +32,12 @@ export function generateDeck(targetCount: number = 144): Omit<Tile, 'x' | 'y' | 
         FLOWERS.forEach(f => deck.push({ id: `tile-${id++}`, type: 'flower', value: f }));
         DRAGONS.forEach(d => { for (let i = 0; i < 4; i++) deck.push({ id: `tile-${id++}`, type: 'dragon', value: d }) });
         WINDS.forEach(w => { for (let i = 0; i < 4; i++) deck.push({ id: `tile-${id++}`, type: 'wind', value: w }) });
+
+        // Add Gift Boxes to Easy Mode too!
+        for (let i = 0; i < 4; i++) {
+            deck.push({ id: `tile-${id++}`, type: 'giftbox', value: 'mystery' });
+        }
+
         return deck;
     }
 
