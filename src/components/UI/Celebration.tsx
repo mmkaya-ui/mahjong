@@ -85,16 +85,14 @@ export default function Celebration() {
 
     const { unlockItem } = useUnlockedItems();
     const [hasOpened, setHasOpened] = React.useState(false);
-    const [reward, setReward] = React.useState<{ type: string, name: string } | null>(null);
+    const [reward, setReward] = React.useState<any | null>(null);
     const [showRewardModal, setShowRewardModal] = React.useState(false);
 
     const handleBoxClick = () => {
         if (hasOpened) return;
 
         // Unlock a random item
-        const types: any[] = ['car', 'plane', 'train', 'ship'];
-        const randomType = types[Math.floor(Math.random() * types.length)];
-        const newItem = unlockItem(randomType);
+        const newItem = unlockItem();
 
         setReward(newItem);
         setHasOpened(true);
@@ -139,7 +137,8 @@ export default function Celebration() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     background: 'rgba(0,0,0,0.8)',
-                    animation: 'fadeIn 0.3s ease-out'
+                    animation: 'fadeIn 0.3s ease-out',
+                    pointerEvents: 'auto'
                 }}>
                     <div style={{
                         background: 'linear-gradient(135deg, #2c3e50, #000000)',
@@ -152,13 +151,11 @@ export default function Celebration() {
                         width: '400px'
                     }}>
                         <h2 style={{ color: '#f1c40f', fontSize: '2rem', marginBottom: '10px' }}>🌟 Unlocked! 🌟</h2>
-                        <div style={{ fontSize: '4rem', margin: '20px 0' }}>
-                            {reward.type === 'car' && '🚗'}
-                            {reward.type === 'plane' && '✈️'}
-                            {reward.type === 'train' && '🚂'}
-                            {reward.type === 'ship' && '🚢'}
+                        <div style={{ fontSize: '6rem', margin: '20px 0', textShadow: '0 0 20px rgba(255,255,255,0.2)' }}>
+                            {reward.icon}
                         </div>
                         <h3 style={{ color: 'white', marginBottom: '30px' }}>{reward.name}</h3>
+                        <p style={{ color: '#aaa', marginBottom: '20px', fontSize: '0.9rem' }}>{reward.category}</p>
                         <button
                             onClick={() => setShowRewardModal(false)}
                             style={{

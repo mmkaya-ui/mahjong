@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useUnlockedItems } from '@/context/UnlockedItemsContext';
-import { ItemViewer } from './ItemViewer';
 import { X } from 'lucide-react';
 
 interface RewardsMenuProps {
@@ -19,7 +18,7 @@ export default function RewardsMenu({ onClose }: RewardsMenuProps) {
         <div style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(0,0,0,0.85)',
+            background: 'rgba(0,0,0,0.9)',
             zIndex: 3000,
             display: 'flex',
             flexDirection: 'column',
@@ -44,66 +43,102 @@ export default function RewardsMenu({ onClose }: RewardsMenuProps) {
             </button>
 
             {activeItem ? (
-                <div style={{ width: '100%', maxWidth: '600px', textAlign: 'center' }}>
-                    <h2 style={{ fontSize: '2rem', marginBottom: '20px' }}>{activeItem.name}</h2>
-                    <ItemViewer type={activeItem.type} />
+                <div style={{ width: '100%', maxWidth: '600px', textAlign: 'center', animation: 'fadeIn 0.3s' }}>
+                    <h2 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>{activeItem.name}</h2>
+                    <p style={{ color: '#aaa', marginBottom: '30px' }}>{activeItem.category}</p>
+
+                    <div style={{
+                        fontSize: '10rem',
+                        margin: '40px 0',
+                        filter: 'drop-shadow(0 0 30px rgba(255,255,255,0.2))',
+                        animation: 'float 6s ease-in-out infinite'
+                    }}>
+                        {activeItem.icon}
+                    </div>
+
                     <button
                         onClick={() => setSelectedItem(null)}
                         style={{
                             marginTop: '20px',
-                            padding: '10px 20px',
+                            padding: '12px 30px',
                             background: 'white',
                             color: 'black',
                             border: 'none',
-                            borderRadius: '20px',
+                            borderRadius: '30px',
                             fontWeight: 'bold',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            fontSize: '1.1rem'
                         }}
                     >
                         Back to Collection
                     </button>
-                    <p style={{ marginTop: '10px', opacity: 0.7 }}>
-                        Drag to rotate • Pinch to zoom
-                    </p>
+                    <style jsx>{`
+                        @keyframes float {
+                            0% { transform: translateY(0px); }
+                            50% { transform: translateY(-20px); }
+                            100% { transform: translateY(0px); }
+                        }
+                    `}</style>
                 </div>
             ) : (
-                <div style={{ width: '100%', maxWidth: '800px' }}>
-                    <h2 style={{ fontSize: '2rem', textAlign: 'center', marginBottom: '40px' }}>Unlocked Treasures</h2>
+                <div style={{ width: '100%', maxWidth: '900px', height: '80vh', display: 'flex', flexDirection: 'column' }}>
+                    <h2 style={{ fontSize: '2.5rem', textAlign: 'center', marginBottom: '10px' }}>Unlocked Treasures</h2>
+                    <p style={{ textAlign: 'center', marginBottom: '30px', opacity: 0.7 }}>
+                        Collection: {unlockedItems.length} items
+                    </p>
+
                     {unlockedItems.length === 0 ? (
-                        <p style={{ textAlign: 'center', fontSize: '1.2rem', opacity: 0.6 }}>
-                            No treasures found yet. Keep playing to find Gift Boxes!
-                        </p>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                            <p style={{ fontSize: '1.5rem', opacity: 0.5, marginBottom: '20px' }}>🔐</p>
+                            <p style={{ textAlign: 'center', fontSize: '1.2rem', opacity: 0.6 }}>
+                                No treasures found yet. Keep playing to find Gift Boxes!
+                            </p>
+                        </div>
                     ) : (
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                            gap: '20px'
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))',
+                            gap: '15px',
+                            overflowY: 'auto',
+                            padding: '10px',
+                            alignContent: 'start'
                         }}>
                             {unlockedItems.map(item => (
                                 <div
                                     key={item.id}
                                     onClick={() => setSelectedItem(item.id)}
                                     style={{
-                                        background: 'rgba(255,255,255,0.1)',
+                                        background: 'rgba(255,255,255,0.05)',
                                         borderRadius: '16px',
                                         padding: '15px',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         flexDirection: 'column',
                                         alignItems: 'center',
-                                        backdropFilter: 'blur(10px)',
-                                        transition: 'transform 0.2s',
+                                        transition: 'all 0.2s',
+                                        border: '1px solid rgba(255,255,255,0.1)'
                                     }}
-                                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.05)';
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                    }}
                                 >
-                                    <div style={{ fontSize: '30px', marginBottom: '10px' }}>
-                                        {item.type === 'car' && '🚗'}
-                                        {item.type === 'plane' && '✈️'}
-                                        {item.type === 'train' && '🚂'}
-                                        {item.type === 'ship' && '🚢'}
+                                    <div style={{ fontSize: '40px', marginBottom: '10px' }}>
+                                        {item.icon}
                                     </div>
-                                    <span style={{ fontSize: '0.9rem', textAlign: 'center', fontWeight: '500' }}>
+                                    <span style={{
+                                        fontSize: '0.85rem',
+                                        textAlign: 'center',
+                                        fontWeight: '500',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                        width: '100%'
+                                    }}>
                                         {item.name}
                                     </span>
                                 </div>
