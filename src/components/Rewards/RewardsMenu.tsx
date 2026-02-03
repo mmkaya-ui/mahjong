@@ -41,12 +41,13 @@ export default function RewardsMenu({ onClose }: RewardsMenuProps) {
                 onClick={onClose}
                 style={{
                     position: 'absolute',
-                    top: '20px',
+                    top: 'calc(20px + env(safe-area-inset-top))',
                     right: '20px',
                     background: 'none',
                     border: 'none',
                     color: 'white',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    zIndex: 10 // Ensure it's clickable
                 }}
             >
                 <X size={32} />

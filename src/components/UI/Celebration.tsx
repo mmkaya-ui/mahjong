@@ -108,7 +108,7 @@ export default function Celebration() {
             if (!hasOpened) {
                 handleBoxClick();
             }
-        }, 3000); // 3 seconds
+        }, 1500); // 1.5 seconds
         return () => clearTimeout(timer);
     }, [hasOpened]);
 
